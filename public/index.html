@@ -164,38 +164,49 @@
         .customer-order-mode { background:#100C0A !important; }
         /* Customer QR ordering usability: isolated to customer-order-mode. */
         .customer-qr-header { border:1px solid rgba(212,175,55,.38); background:linear-gradient(135deg,#211711,#120d0b); box-shadow:0 10px 28px rgba(0,0,0,.26); }
-        /* Mobile QR brand hierarchy: larger official logo, smaller developer credit. */
+        /* Customer QR brand stack: the official logo is intentionally larger; credits are omitted from this customer header. */
         .customer-qr-brand-stack { display:flex; flex-direction:column; align-items:center; gap:.32rem; text-align:center; }
-        /* Interactive futuristic glow is decorative and scoped only to the customer QR logo. */
-        .customer-qr-logo-frame { position:relative; display:grid; place-items:center; width:clamp(176px,56vw,228px); max-width:100%; aspect-ratio:1; margin-inline:auto; border-radius:50%; isolation:isolate; transform:translateZ(0); transition:transform .34s cubic-bezier(.2,.8,.2,1),filter .34s ease; --logo-glow-x:50%; --logo-glow-y:50%; }
-        .customer-qr-logo-frame::before { content:""; position:absolute; z-index:-3; inset:-24%; border-radius:50%; background:radial-gradient(circle,rgba(255,250,214,.68) 0%,rgba(255,193,54,.48) 30%,rgba(212,143,28,.26) 48%,transparent 72%); filter:blur(19px); opacity:.9; pointer-events:none; animation:customer-qr-logo-aura 2.55s ease-in-out infinite; will-change:transform,opacity,filter; }
-        .customer-qr-logo-frame::after { content:""; position:absolute; z-index:0; inset:-2%; border-radius:50%; pointer-events:none; background:radial-gradient(circle at var(--logo-glow-x) var(--logo-glow-y),rgba(255,250,218,.72),rgba(255,211,98,.20) 18%,transparent 48%); opacity:0; transition:opacity .24s ease; mix-blend-mode:screen; }
-        .customer-qr-logo { position:relative; z-index:1; display:block; width:100%; height:100%; max-width:100%; object-fit:contain; border-radius:50%; background:#fff; border:3px solid rgba(255,226,139,.94); box-shadow:0 10px 28px rgba(0,0,0,.38),0 0 22px rgba(212,175,55,.34),0 0 38px rgba(255,190,55,.22); transition:filter .3s ease,box-shadow .3s ease; }
-        .customer-qr-logo-aura { position:absolute; z-index:-2; inset:-17%; border-radius:50%; pointer-events:none; background:radial-gradient(circle at var(--logo-glow-x) var(--logo-glow-y),rgba(255,255,228,.82),rgba(255,184,38,.38) 24%,transparent 62%); filter:blur(16px); opacity:.72; transition:opacity .25s ease; animation:customer-qr-logo-aura 3.1s ease-in-out infinite reverse; will-change:transform,opacity; }
-        .customer-qr-logo-orbit { position:absolute; z-index:2; inset:-7%; border:2px solid transparent; border-top-color:rgba(255,250,202,1); border-right-color:rgba(255,193,55,.96); border-radius:50%; filter:drop-shadow(0 0 7px rgba(255,223,115,.98)) drop-shadow(0 0 15px rgba(255,166,28,.55)); pointer-events:none; animation:customer-qr-logo-orbit 5.6s linear infinite; will-change:transform; }
-        .customer-qr-logo-orbit::after { content:""; position:absolute; width:8px; height:8px; top:8%; left:13%; border-radius:50%; background:#fff8d6; box-shadow:0 0 7px 3px rgba(255,223,127,.95),0 0 18px 6px rgba(255,174,34,.6); }
-        .customer-qr-logo-orbit-secondary { z-index:-1; inset:-15%; border-width:2px; border-style:dashed; border-top-color:rgba(255,239,168,.72); border-bottom-color:rgba(255,184,45,.58); filter:drop-shadow(0 0 6px rgba(255,191,61,.62)); animation:customer-qr-logo-orbit-reverse 10.5s linear infinite; will-change:transform; }
-        .customer-qr-logo-orbit-secondary::after { width:5px; height:5px; top:auto; bottom:13%; left:78%; }
-        .customer-qr-logo-pulse { position:absolute; z-index:0; inset:-7%; border:2px solid rgba(255,226,139,.76); border-radius:50%; box-shadow:0 0 12px rgba(255,208,82,.58),inset 0 0 12px rgba(255,208,82,.18); pointer-events:none; animation:customer-qr-logo-pulse 3.15s ease-out infinite; will-change:transform,opacity; }
-        .customer-qr-logo-energy-sweep { position:absolute; z-index:3; inset:-10%; border:3px solid transparent; border-top-color:rgba(255,255,220,.98); border-right-color:rgba(255,201,75,.95); border-bottom-color:rgba(255,169,36,.42); border-radius:50%; filter:drop-shadow(0 0 6px rgba(255,223,122,.98)) drop-shadow(0 0 16px rgba(255,167,33,.62)); pointer-events:none; animation:customer-qr-logo-energy 3.8s linear infinite; will-change:transform,filter; }
-        .customer-qr-logo-energy-sweep::after { content:""; position:absolute; width:10px; height:10px; top:8%; left:18%; border-radius:50%; background:#fffef0; box-shadow:0 0 8px 4px rgba(255,250,201,.98),0 0 22px 9px rgba(255,176,38,.9),0 0 38px 15px rgba(255,130,13,.42); }
-        .customer-qr-logo-frame.is-energized .customer-qr-logo-pulse { animation-duration:1.25s; border-color:rgba(255,248,196,.98); box-shadow:0 0 22px rgba(255,220,106,.9),inset 0 0 18px rgba(255,208,82,.35); }
-        .customer-qr-logo-frame.is-energized .customer-qr-logo-energy-sweep { animation-duration:1.45s; filter:drop-shadow(0 0 10px rgba(255,245,183,1)) drop-shadow(0 0 26px rgba(255,167,33,.95)); }
-        .customer-qr-logo-frame.is-energized .customer-qr-logo-orbit-secondary { animation-duration:3.2s; }
-
+        /* Futuristic logo lighting: continuous halo, animated rays, energy orbits, and a moving light sweep. */
+        .customer-qr-logo-frame { position:relative; display:grid; place-items:center; width:clamp(236px,76vw,340px); max-width:100%; aspect-ratio:1; margin:clamp(.35rem,2vw,.8rem) auto; border-radius:50%; isolation:isolate; transform:translateZ(0); cursor:pointer; touch-action:manipulation; outline:none; transition:transform .42s cubic-bezier(.2,.8,.2,1),filter .42s ease; --logo-glow-x:50%; --logo-glow-y:50%; }
+        .customer-qr-logo-frame::before { content:""; position:absolute; z-index:-4; inset:-34%; border-radius:50%; background:radial-gradient(circle,rgba(255,255,229,.95) 0%,rgba(255,220,111,.74) 19%,rgba(255,174,35,.48) 39%,rgba(212,105,14,.18) 57%,transparent 74%); filter:blur(25px); opacity:.92; pointer-events:none; animation:customer-qr-logo-aura 2.6s ease-in-out infinite; will-change:transform,opacity,filter; }
+        .customer-qr-logo-frame::after { content:""; position:absolute; z-index:0; inset:-3%; border-radius:50%; pointer-events:none; background:radial-gradient(circle at var(--logo-glow-x) var(--logo-glow-y),rgba(255,255,225,.92),rgba(255,211,98,.30) 19%,transparent 52%); opacity:0; transition:opacity .22s ease; mix-blend-mode:screen; }
+        .customer-qr-logo-rays { position:absolute; z-index:-3; inset:-29%; border-radius:50%; pointer-events:none; background:repeating-conic-gradient(from 0deg,rgba(255,246,196,0) 0deg 7deg,rgba(255,220,127,.46) 7.5deg 8.2deg,rgba(255,175,45,0) 9deg 16deg); -webkit-mask:radial-gradient(circle,transparent 48%,#000 58%,#000 70%,transparent 83%); mask:radial-gradient(circle,transparent 48%,#000 58%,#000 70%,transparent 83%); filter:blur(1.2px); opacity:.64; animation:customer-qr-logo-rays 26s linear infinite; }
+        .customer-qr-logo-aura { position:absolute; z-index:-2; inset:-23%; border-radius:50%; pointer-events:none; background:radial-gradient(circle at var(--logo-glow-x) var(--logo-glow-y),rgba(255,255,238,.92),rgba(255,190,48,.52) 25%,rgba(236,122,18,.18) 48%,transparent 66%); filter:blur(21px); opacity:.82; transition:opacity .25s ease; animation:customer-qr-logo-aura 3s ease-in-out infinite reverse; will-change:transform,opacity; }
+        .customer-qr-logo { position:relative; z-index:1; display:block; width:100%; height:100%; max-width:100%; object-fit:contain; border-radius:50%; background:#fff; border:3px solid rgba(255,238,177,.98); box-shadow:0 12px 32px rgba(0,0,0,.40),0 0 24px rgba(255,219,112,.72),0 0 55px rgba(255,165,35,.48),0 0 92px rgba(255,130,17,.22); transition:filter .32s ease,box-shadow .32s ease; animation:customer-qr-logo-breathe 4.8s ease-in-out infinite; }
+        .customer-qr-logo-orbit { position:absolute; z-index:2; inset:-7%; border:2px solid transparent; border-top-color:rgba(255,255,226,1); border-right-color:rgba(255,193,55,.98); border-radius:50%; filter:drop-shadow(0 0 8px rgba(255,245,185,1)) drop-shadow(0 0 18px rgba(255,166,28,.72)); pointer-events:none; animation:customer-qr-logo-orbit 5.2s linear infinite; will-change:transform; }
+        .customer-qr-logo-orbit::after { content:""; position:absolute; width:9px; height:9px; top:8%; left:13%; border-radius:50%; background:#fffef0; box-shadow:0 0 9px 4px rgba(255,255,218,1),0 0 22px 8px rgba(255,174,34,.78),0 0 36px 13px rgba(255,130,13,.35); }
+        .customer-qr-logo-orbit-secondary { z-index:-1; inset:-16%; border-width:2px; border-style:dashed; border-top-color:rgba(255,247,198,.78); border-bottom-color:rgba(255,184,45,.72); filter:drop-shadow(0 0 7px rgba(255,191,61,.76)); animation:customer-qr-logo-orbit-reverse 11s linear infinite; will-change:transform; }
+        .customer-qr-logo-orbit-secondary::after { width:6px; height:6px; top:auto; bottom:13%; left:78%; }
+        .customer-qr-logo-pulse { position:absolute; z-index:0; inset:-8%; border:2px solid rgba(255,237,172,.86); border-radius:50%; box-shadow:0 0 16px rgba(255,208,82,.72),inset 0 0 14px rgba(255,208,82,.24); pointer-events:none; animation:customer-qr-logo-pulse 3.1s ease-out infinite; will-change:transform,opacity; }
+        .customer-qr-logo-plasma { position:absolute; z-index:3; inset:-12%; border-radius:50%; pointer-events:none; background:conic-gradient(from 0deg,transparent 0deg,rgba(255,248,202,.12) 28deg,rgba(255,255,230,.98) 46deg,rgba(255,177,40,.10) 63deg,transparent 105deg,transparent 177deg,rgba(255,204,87,.12) 210deg,rgba(255,248,202,.92) 232deg,transparent 258deg,transparent 360deg); -webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 5px),#000 calc(100% - 2px)); mask:radial-gradient(farthest-side,transparent calc(100% - 5px),#000 calc(100% - 2px)); filter:drop-shadow(0 0 8px rgba(255,232,148,.98)) drop-shadow(0 0 20px rgba(255,158,25,.72)); opacity:.92; animation:customer-qr-logo-plasma 4.6s linear infinite; }
+        .customer-qr-logo-energy-sweep { position:absolute; z-index:4; inset:-10%; border:3px solid transparent; border-top-color:rgba(255,255,235,1); border-right-color:rgba(255,201,75,.98); border-bottom-color:rgba(255,169,36,.50); border-radius:50%; filter:drop-shadow(0 0 8px rgba(255,245,183,1)) drop-shadow(0 0 18px rgba(255,167,33,.75)); pointer-events:none; animation:customer-qr-logo-energy 3.4s linear infinite; will-change:transform,filter; }
+        .customer-qr-logo-energy-sweep::after { content:""; position:absolute; width:11px; height:11px; top:8%; left:18%; border-radius:50%; background:#fffef0; box-shadow:0 0 9px 5px rgba(255,250,201,1),0 0 24px 10px rgba(255,176,38,.95),0 0 42px 16px rgba(255,130,13,.48); }
+        .customer-qr-logo-impact { position:absolute; z-index:5; inset:-5%; border:1px solid rgba(255,248,197,.95); border-radius:50%; opacity:0; pointer-events:none; box-shadow:0 0 18px rgba(255,232,143,.92),inset 0 0 16px rgba(255,207,86,.35); }
+        .customer-qr-logo-glint { position:absolute; z-index:6; inset:1.5%; overflow:hidden; border-radius:50%; pointer-events:none; background:linear-gradient(112deg,transparent 34%,rgba(255,255,255,.02) 43%,rgba(255,255,225,.78) 50%,rgba(255,193,66,.23) 55%,transparent 64%); mix-blend-mode:screen; opacity:0; transform:translateX(-135%) skewX(-13deg); animation:customer-qr-logo-glint 7.2s ease-in-out infinite; }
+        .customer-qr-logo-frame.is-energized .customer-qr-logo-pulse { animation-duration:.95s; border-color:rgba(255,255,219,1); box-shadow:0 0 28px rgba(255,241,171,1),inset 0 0 22px rgba(255,208,82,.48); }
+        .customer-qr-logo-frame.is-energized .customer-qr-logo-energy-sweep { animation-duration:1.15s; filter:drop-shadow(0 0 13px rgba(255,255,220,1)) drop-shadow(0 0 32px rgba(255,167,33,1)); }
+        .customer-qr-logo-frame.is-energized .customer-qr-logo-orbit-secondary { animation-duration:2.8s; }
+        .customer-qr-logo-frame.is-energized .customer-qr-logo-plasma { animation-duration:1.2s; opacity:1; }
+        .customer-qr-logo-frame.is-energized .customer-qr-logo-rays { animation-duration:5s; opacity:1; }
+        .customer-qr-logo-frame.is-energized .customer-qr-logo-impact { animation:customer-qr-logo-impact .9s ease-out 2; }
+        .customer-qr-logo-frame.is-energized .customer-qr-logo-glint { animation:customer-qr-logo-glint 1.2s ease-in-out 2; opacity:1; }
         .customer-qr-logo-frame.is-interacting::after { opacity:1; }
         .customer-qr-logo-frame.is-interacting .customer-qr-logo-aura { opacity:1; }
-        .customer-qr-logo-frame.is-interacting .customer-qr-logo { filter:brightness(1.055) saturate(1.06); box-shadow:0 10px 28px rgba(0,0,0,.38),0 0 25px rgba(255,223,125,.55),0 0 52px rgba(255,174,34,.35); }
-        .customer-qr-logo-frame.is-energized { transform:scale(1.035); filter:drop-shadow(0 0 16px rgba(255,229,135,.78)) drop-shadow(0 0 30px rgba(255,158,25,.46)); }
-        .customer-qr-logo-frame.is-energized .customer-qr-logo-orbit { animation-duration:1.65s; }
-        .customer-qr-logo-frame.is-energized::before { opacity:1; filter:blur(18px); }
-        @keyframes customer-qr-logo-aura { 0%,100% { transform:scale(.88); opacity:.58; filter:blur(15px); } 50% { transform:scale(1.13); opacity:1; filter:blur(22px); } }
-        @keyframes customer-qr-logo-pulse { 0% { transform:scale(.94); opacity:.92; } 72%,100% { transform:scale(1.17); opacity:0; } }
+        .customer-qr-logo-frame.is-interacting .customer-qr-logo { filter:brightness(1.10) saturate(1.12); box-shadow:0 12px 32px rgba(0,0,0,.40),0 0 30px rgba(255,239,157,.78),0 0 66px rgba(255,174,34,.58),0 0 110px rgba(255,130,17,.28); }
+        .customer-qr-logo-frame.is-energized { transform:scale(1.045); filter:drop-shadow(0 0 20px rgba(255,242,177,.92)) drop-shadow(0 0 42px rgba(255,158,25,.62)); }
+        .customer-qr-logo-frame.is-energized .customer-qr-logo-orbit { animation-duration:1.25s; }
+        .customer-qr-logo-frame.is-energized::before { opacity:1; filter:blur(26px); }
+        .customer-qr-logo-frame:focus-visible { outline:3px solid rgba(255,228,137,.98); outline-offset:9px; }
+        @keyframes customer-qr-logo-aura { 0%,100% { transform:scale(.86); opacity:.66; filter:blur(19px); } 50% { transform:scale(1.17); opacity:1; filter:blur(29px); } }
+        @keyframes customer-qr-logo-breathe { 0%,100% { filter:brightness(1) saturate(1); transform:scale(1); } 50% { filter:brightness(1.075) saturate(1.10); transform:scale(1.012); } }
+        @keyframes customer-qr-logo-rays { to { transform:rotate(360deg); } }
+        @keyframes customer-qr-logo-pulse { 0% { transform:scale(.93); opacity:.96; } 75%,100% { transform:scale(1.2); opacity:0; } }
         @keyframes customer-qr-logo-energy { to { transform:rotate(360deg); } }
+        @keyframes customer-qr-logo-plasma { to { transform:rotate(360deg); } }
         @keyframes customer-qr-logo-orbit { to { transform:rotate(360deg); } }
         @keyframes customer-qr-logo-orbit-reverse { to { transform:rotate(-360deg); } }
-        .customer-qr-developer-name { margin-top:.12rem; color:#f7dc8a; font-family:Georgia,serif; font-size:clamp(.84rem,3.1vw,1rem); font-weight:700; line-height:1.2; letter-spacing:.035em; }
-        .customer-qr-developer-role { color:rgba(255,235,185,.68); font-size:.62rem; font-weight:700; line-height:1.3; letter-spacing:.16em; text-transform:uppercase; }
+        @keyframes customer-qr-logo-glint { 0%,62% { opacity:0; transform:translateX(-135%) skewX(-13deg); } 68% { opacity:.92; } 83%,100% { opacity:0; transform:translateX(135%) skewX(-13deg); } }
+        @keyframes customer-qr-logo-impact { 0% { transform:scale(.94); opacity:.95; } 100% { transform:scale(1.23); opacity:0; } }
         .customer-quick-checkout { position:sticky; top:max(.5rem,env(safe-area-inset-top)); z-index:100; display:flex; align-items:center; justify-content:space-between; gap:.75rem; padding:.78rem .9rem; margin-bottom:.25rem; border:1px solid rgba(242,211,110,.78); border-radius:1rem; background:rgba(22,16,13,.98); backdrop-filter:blur(14px); box-shadow:0 8px 24px rgba(0,0,0,.42),0 0 0 1px rgba(212,175,55,.16); }
         .customer-quick-checkout button { flex-shrink:0; border-radius:.8rem; padding:.75rem 1.05rem; background:linear-gradient(135deg,#f5dc8d,#D4AF37); color:#100C0A; font-weight:900; font-size:.86rem; box-shadow:0 4px 14px rgba(212,175,55,.3); }
         .customer-quick-checkout button:disabled { opacity:.42; box-shadow:none; }
@@ -213,7 +224,7 @@
         .customer-jingle-control { display:inline-flex; align-items:center; gap:.5rem; border:1px solid rgba(212,175,55,.42); border-radius:999px; padding:.48rem .78rem; background:rgba(16,12,10,.7); color:#f6d879; font-size:.72rem; font-weight:700; }
         .customer-jingle-hint { min-height:1rem; color:#f4d88b; font-size:10px; }
         @media (max-width:420px) { .customer-quick-checkout { padding:.6rem .65rem; } .customer-quick-checkout button { padding:.65rem .72rem; font-size:.75rem; } }
-        @media (prefers-reduced-motion: reduce) { .customer-category-tab,.customer-item-card,.customer-tab-indicator,.customer-qr-logo-frame,.customer-qr-logo { transition:none !important; } .customer-added-flash,.customer-item-card.is-selected { animation:none !important; } .customer-qr-logo-frame::before,.customer-qr-logo-aura { animation-duration:8s !important; } .customer-qr-logo-pulse { animation-duration:9s !important; } .customer-qr-logo-energy-sweep { animation-duration:18s !important; } .customer-qr-logo-orbit { animation-duration:18s !important; } .customer-qr-logo-orbit-secondary { animation-duration:24s !important; } }
+        @media (prefers-reduced-motion: reduce) { .customer-category-tab,.customer-item-card,.customer-tab-indicator,.customer-qr-logo-frame,.customer-qr-logo { transition:none !important; } .customer-added-flash,.customer-item-card.is-selected { animation:none !important; } .customer-qr-logo-frame::before,.customer-qr-logo-aura { animation-duration:10s !important; } .customer-qr-logo-rays { animation-duration:48s !important; } .customer-qr-logo-pulse { animation-duration:10s !important; } .customer-qr-logo-energy-sweep,.customer-qr-logo-plasma { animation-duration:28s !important; } .customer-qr-logo-orbit { animation-duration:28s !important; } .customer-qr-logo-orbit-secondary { animation-duration:34s !important; } .customer-qr-logo-glint { animation-duration:16s !important; } .customer-qr-logo-impact { animation-duration:12s !important; } .customer-qr-logo { animation-duration:10s !important; } }
     </style>
 </head>
 <body class="bg-mocha-900 text-gray-100 font-sans min-h-screen flex flex-col antialiased selection:bg-gold-500 selection:text-mocha-900">
@@ -1686,16 +1697,18 @@
                 <div class="customer-quick-checkout"><div class="min-w-0"><p class="text-[10px] uppercase tracking-wider text-gray-300">Your tray</p><p class="font-bold text-gold-300"><span id="cust-top-count">0 items</span> · <span id="cust-top-total">₱0.00</span></p></div><button id="cust-top-submit" type="button" onclick="submitCustomerMobileOrder()" disabled><i class="fa-solid fa-bag-shopping mr-1"></i> Checkout</button></div>
                 <header class="customer-qr-header rounded-2xl p-4">
                     <div class="customer-qr-brand-stack">
-                        <div class="customer-qr-logo-frame" data-customer-logo-glow aria-label="39ers Delights glowing logo">
+                        <div class="customer-qr-logo-frame" data-customer-logo-glow role="button" tabindex="0" aria-pressed="false" aria-label="Tap to activate the 39ers Delights energy glow">
+                            <span class="customer-qr-logo-rays" aria-hidden="true"></span>
                             <span class="customer-qr-logo-aura" aria-hidden="true"></span>
                             <span class="customer-qr-logo-pulse" aria-hidden="true"></span>
                             <span class="customer-qr-logo-orbit" aria-hidden="true"></span>
                             <span class="customer-qr-logo-orbit customer-qr-logo-orbit-secondary" aria-hidden="true"></span>
+                            <span class="customer-qr-logo-plasma" aria-hidden="true"></span>
                             <span class="customer-qr-logo-energy-sweep" aria-hidden="true"></span>
+                            <span class="customer-qr-logo-impact" aria-hidden="true"></span>
                             <img src="/assets/39ers-delights-logo.png" alt="39ers Delights official logo" class="customer-qr-logo" width="520" height="520" decoding="async">
+                            <span class="customer-qr-logo-glint" aria-hidden="true"></span>
                         </div>
-                        <p class="customer-qr-developer-name">Willie Brian Belmonte Valeria</p>
-                        <p class="customer-qr-developer-role">Graphics and Visual Designer</p>
                     </div>
                     <div class="customer-qr-order-intro mt-4 text-center">
                         <h1 class="text-2xl font-bold">Order from your phone</h1>
@@ -1732,16 +1745,20 @@
             };
             const energize = event => {
                 if (event && Number.isFinite(event.clientX) && Number.isFinite(event.clientY)) setGlowFocus(event);
+                frame.classList.remove('is-energized');
+                void frame.offsetWidth; // restart the impact and light-sweep animations on every deliberate tap
                 frame.classList.add('is-energized', 'is-interacting');
+                frame.setAttribute('aria-pressed', 'true');
                 if (relaxTimer) window.clearTimeout(relaxTimer);
             };
             const relax = () => {
                 if (relaxTimer) window.clearTimeout(relaxTimer);
                 relaxTimer = window.setTimeout(() => {
                     frame.classList.remove('is-energized', 'is-interacting');
+                    frame.setAttribute('aria-pressed', 'false');
                     frame.style.setProperty('--logo-glow-x', '50%');
                     frame.style.setProperty('--logo-glow-y', '50%');
-                }, 1450);
+                }, 2400);
             };
             frame.addEventListener('pointermove', event => {
                 if (event.pointerType === 'mouse' || event.pointerType === 'pen') setGlowFocus(event);
@@ -1754,6 +1771,13 @@
             frame.addEventListener('pointerleave', event => { if (event.pointerType !== 'touch') relax(); }, { passive: true });
             frame.addEventListener('focus', () => frame.classList.add('is-interacting'), true);
             frame.addEventListener('blur', relax, true);
+            frame.addEventListener('keydown', event => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    energize();
+                    relax();
+                }
+            });
         }
         let customerCategory = 'ALL';
         let customerSelectedItemId = null;

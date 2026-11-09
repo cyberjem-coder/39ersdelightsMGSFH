@@ -1,0 +1,21 @@
+39ERS DELIGHTS — ANIMATED LOGO / CREDIT REMOVAL UPDATE
+
+This update changes only the customer-facing mobile QR page at:
+  public/index.html
+
+Visual changes:
+- Removes the "Willie Brian Belmonte Valeria — Graphics and Visual Designer" credit from the customer QR header.
+- Enlarges the official logo responsively.
+- Adds a brighter animated golden aura, rotating energy rays, plasma ring, orbit rings, moving glint, and touch/click impact pulse.
+- Allows pointer/touch interaction to focus the light; keyboard Enter/Space also activates the glow.
+- Respects reduced-motion preferences with slower animation.
+
+No POS sales, checkout, inventory, Sold Out, QR order submission, jingle, Google Sheets, Netlify Functions, Netlify Blobs store names, storage keys, or dependencies were intentionally changed.
+
+INSTALLATION (small patch):
+1. In GitHub, open the repository and select the production branch `main`.
+2. Open `public/index.html` and replace its contents with the file from this ZIP.
+3. Commit the change to `main`.
+4. Wait for Netlify to publish, then test the customer QR page on a phone.
+
+Do not replace the root-level index.html. Do not delete or recreate the Netlify Blobs store.
