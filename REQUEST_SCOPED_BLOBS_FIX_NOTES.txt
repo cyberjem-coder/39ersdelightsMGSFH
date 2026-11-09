@@ -1,0 +1,43 @@
+39ERS DELIGHTS — REQUEST-SCOPED NETLIFY BLOBS FIX
+
+WHY THIS UPDATE EXISTS
+The diagnostic reported:
+  stage=cashier_authorization_storage
+  type=BlobsInternalError
+  storage HTTP=401
+
+The previous shared helper created getStore("39ers-delights-mobile-orders") at module import time.
+Netlify supplies the site-scoped Blobs credentials in the active Functions request context.
+This update creates the same store inside each request handler instead.
+
+FILES CHANGED
+- lib/store.mjs
+- netlify/functions/mobile-menu.mjs
+- netlify/functions/mobile-orders.mjs
+- netlify/functions/reset-pos-device.mjs
+
+DATA PRESERVATION
+- Store name remains: 39ers-delights-mobile-orders
+- Menu key remains: customer-menu
+- Cashier key remains: pos-device-key-hash
+- Order key format remains: order-<token>
+- No Blobs store is deleted, renamed, moved, or migrated.
+- No sales, inventory, checkout, VAT, discounts, receipts, reports, QR UI, jingle,
+  Sold Out rules, or Google Sheets files are intentionally changed.
+
+INSTALLATION
+Upload/replace only the four listed paths in the existing repository's MAIN branch,
+keeping the same folders. Do not delete any other files. Keep Node.js 24.x and keep
+@netlify/blobs 11.1.7. Deploy from GitHub as usual.
+
+TESTING
+1. Wait for the Production deploy to say Published.
+2. Open /api/mobile-menu. It should return the existing menu.
+3. Open the cashier POS and test its normal menu publish path.
+4. Test mobile order loading and submission after confirming menu reads are stable.
+
+IMPORTANT
+This fixes a code pattern known to cause Blobs environment/context problems when
+getStore is called outside a request handler. It is a targeted remediation, not a
+promise that Netlify platform-side 401 errors are impossible. Do not reset cashier
+authorization or delete Blobs data during this update.

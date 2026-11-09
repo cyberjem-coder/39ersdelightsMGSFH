@@ -1,0 +1,45 @@
+39ERS DELIGHTS — COMPLETE PROJECT WITH MOBILE MENU 502 STABILITY FIX
+
+This is a complete Netlify project package, not a two-file-only patch.
+It preserves the previously prepared POS, mobile QR ordering, Sold Out
+controls, jingle, Netlify functions, shared storage helper, and Google Sheets
+setup/synchronization files.
+
+APPLICATION CODE CHANGES FOR THIS RELEASE
+1. public/index.html
+   - Retries temporary menu endpoint/network failures.
+   - Keeps the last successfully loaded public menu visible if the server is
+     briefly unavailable.
+   - Shows a reconnect notice and retries in the background.
+   - Requires a fresh server-side availability check before an order is sent.
+   - Cached menu data is display-only; it cannot authorize an order or bypass
+     Sold Out and stock validation.
+
+2. netlify/functions/mobile-menu.mjs
+   - Retries transient Netlify Blobs reads a limited number of times.
+   - Catches unexpected errors and returns a controlled 503 response with an
+     incident ID instead of allowing an unhandled exception to escape.
+   - Logs the incident ID and underlying exception for Netlify diagnostics.
+
+FILES AND BEHAVIOR LEFT UNCHANGED FROM THE PREVIOUS COMPLETE PROJECT
+- POS sales, checkout, inventory, VAT, discounts/promotions, receipts, reports.
+- Automatic and manual Sold Out behavior.
+- Mobile order queue and mobile-orders server function.
+- Cashier authorization and reset function.
+- Google Sheets Apps Script and setup instructions.
+- Shared storage helper and the Netlify Blobs store name.
+- netlify.toml. package.json is separately updated in this bundle to pin @netlify/blobs 11.1.7 and override @netlify/otel to 7.0.6; see BLOBS_SDK_UPGRADE_NOTES.txt.
+- The supplied MP3 jingle and customer-facing audio/navigation features.
+
+IMPORTANT
+- This archive contains source files and the jingle. It does not contain live
+  browser localStorage, Netlify Blobs contents, sales/order records, or secrets.
+- Do not clear browser data, delete the Netlify Blobs store, change its name,
+  or reset cashier authorization as part of this menu reliability update.
+- A cache is only used to keep the menu visible during a brief outage. A fresh
+  server check is still required before order submission.
+- Code cannot prevent every possible 502 caused by a platform outage, deploy
+  failure, or function invocation failure before the handler runs. If errors
+  continue, inspect the mobile-menu function logs using the incident ID.
+- Deploy on a separate branch/Deploy Preview first. Test before merging to the
+  production branch.

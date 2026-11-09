@@ -1,0 +1,42 @@
+39ERS DELIGHTS — MENU PUBLISH HTTP 502 UPDATE
+
+This is a complete project package based on the previously prepared complete
+mobile QR / music / Sold Out project. Only these two application files differ
+from that baseline:
+
+1. public/index.html
+   - Retries transient cashier-side PUT /api/mobile-menu failures (HTTP 408,
+     425, 429, 500, 502, 503, 504), request timeouts, and network errors up to
+     four attempts.
+   - Serializes menu publishing so stock/order events cannot create overlapping
+     writes to the single published-menu key. New changes are queued and sent
+     after the active publish completes.
+   - Reports an error only after retries are exhausted.
+
+2. netlify/functions/mobile-menu.mjs
+   - Retries transient Blobs authorization reads/registration and menu writes.
+   - Returns a controlled 503 with an incident ID and Retry-After header when
+     a storage failure persists, rather than allowing an unhandled exception.
+   - Retains the existing Blobs store name, published-menu key, request path,
+     authentication behavior, item/variant normalization, and Sold Out checks.
+
+The repeated PUT is safe to retry because it overwrites the same customer-menu
+key with the same menu snapshot. No sales, inventory, receipts, orders, browser
+localStorage, Netlify Blobs data, device keys, or secrets are included in or
+modified by creating this ZIP.
+
+All other application source files, Netlify functions, shared store helper,
+Google Sheets scripts, audio asset, and existing features are byte-for-byte
+unchanged from the preceding complete 502 stability project.
+
+Tests performed locally: syntax checks for both inline page scripts and the
+mobile-menu function; simulated two transient Blob write failures followed by
+a successful publish; GET verification of the published menu; simulated
+persistent Blob write failure returns a controlled 503 and incident ID; ZIP
+integrity. Live Netlify deployment and real-phone testing are not performed.
+
+If Netlify itself returns 502 before the function handler starts, the handler
+cannot log an incident for that request. Inspect Netlify > Cloud compute >
+Functions > mobile-menu logs at the same time as a retry, and compare whether
+the function invocation starts. Do not reset cashier authorization or delete
+the Blobs store as a troubleshooting step.

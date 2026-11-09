@@ -1,0 +1,20 @@
+NETLIFY BUILD FAILURE — DEPENDENCY RESOLUTION
+
+Reported build error:
+  npm error code ETARGET
+  No matching version found for @netlify/otel@^7.0.7
+
+This happened during Install dependencies, before Netlify built or deployed the
+functions. It is not a runtime menu-storage error.
+
+This bundle uses @netlify/blobs 11.1.7 and an npm override for @netlify/otel 7.0.6.
+The Netlify Blobs changelog records that 11.1.8 changed its @netlify/otel range
+from ^7.0.6 to ^7.0.7, while 11.1.7 includes the concurrent conditional-write fix.
+
+For the existing GitHub repo, the minimum intended change is replacing only the
+root-level package.json on mobile-qr-update. Do not replace, reset, or delete any
+application files or Netlify Blobs records for this dependency install fix.
+
+After committing package.json, trigger a fresh branch deployment. Confirm that
+Install dependencies passes. If the same ETARGET error persists, share the new
+build log; do not reset cashier authorization or delete the Blobs store.

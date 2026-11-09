@@ -1,0 +1,29 @@
+39ERS DELIGHTS — SAFE MENU DIAGNOSTIC PATCH
+
+WHY THIS PATCH EXISTS
+Netlify function logs are not available to the site owner in the current dashboard view. This patch makes the mobile-menu function return a small, safe diagnostic summary with its existing incident ID. The cashier POS then displays that summary in its existing QR/menu status line.
+
+WHAT IT CHANGES
+1. public/index.html
+   Displays the diagnostic stage returned by /api/mobile-menu when cashier menu publishing fails. Also displays a stage and incident ID for customer menu-load failures where the API function returns a diagnostic response.
+2. netlify/functions/mobile-menu.mjs
+   Identifies the stage that failed: menu_storage_read, cashier_authorization_storage, or menu_storage_write. It returns only a sanitized error type/code/status, not a stack trace, secret, device key, token, or raw internal error message.
+
+WHAT IT DOES NOT CHANGE
+No inventory, sales, checkout, VAT, discounts, promotions, receipts, order queue, Sold Out rules, Google Sheets scripts, Blobs store name, storage keys, cashier authorization rules, jingle, or other Netlify functions are changed by this patch.
+
+INSTALLATION
+On the GitHub branch used for your Netlify preview, replace these exact two files only:
+- public/index.html
+- netlify/functions/mobile-menu.mjs
+Keep the folder paths exactly as shown. Commit the changes to the preview branch and let Netlify deploy it. Do not delete or rename any other file. Do not reset cashier authorization or delete Netlify Blobs data.
+
+HOW TO USE THE DIAGNOSTIC
+After deployment, refresh the cashier POS and open the QR/mobile-menu section so it attempts to publish again. If it fails, copy the Diagnostic part shown in the existing status message. Examples:
+- stage=cashier_authorization_storage means the Blobs read/register/check for the cashier device key failed.
+- stage=menu_storage_write means saving customer-menu failed.
+- stage=menu_storage_read means a customer menu load failed.
+The optional type, code, and storage HTTP fields help narrow the provider error without exposing credentials.
+
+IMPORTANT
+This is a diagnostic patch, not a claim that the underlying Netlify Blobs failure is already fixed. It is intended to identify the failing operation without requiring access to Netlify function logs.

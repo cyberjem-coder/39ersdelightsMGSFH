@@ -1,0 +1,56 @@
+39ERS DELIGHTS — NETLIFY BLOBS SDK UPDATE / DEPENDENCY INSTALL FIX
+
+WHAT THIS BUNDLE CHANGES
+- Pins the existing @netlify/blobs dependency to version 11.1.7 in package.json.
+- Adds an npm override pinning the transitive @netlify/otel dependency to 7.0.6.
+  This avoids the @netlify/otel@^7.0.7 resolution failure reported by the
+  user's Netlify build.
+- Does not change the POS page, mobile-menu function, mobile-orders function,
+  reset function, shared storage helper, menu data format, store name, or keys.
+- Keep Netlify Node.js at 24.x. Blobs v11 requires Node.js 22.12 or newer.
+
+WHY VERSION 11.1.7 IS USED
+The user's prior build failed during npm dependency installation with:
+  npm error code ETARGET
+  No matching version found for @netlify/otel@^7.0.7
+Blobs 11.1.8 updated its @netlify/otel dependency range from ^7.0.6 to ^7.0.7.
+Blobs 11.1.7 predates that dependency bump and includes the concurrent conditional
+write fix. The override explicitly selects @netlify/otel 7.0.6 for the project.
+
+The v11 release line also includes:
+- v11.0.3: retry failed requests using a refreshed signed URL and improve error
+  messaging for failed requests.
+- v11.1.4: cancel response bodies that the client does not read.
+- v11.1.7: fix a race involving concurrent conditional writes.
+
+This is a targeted dependency-resolution adjustment and may also help with the
+observed Blobs read issue. It is NOT a guarantee that every BlobsInternalError
+or Netlify platform outage will be eliminated.
+
+DATA PRESERVATION
+- Shared store remains exactly: 39ers-delights-mobile-orders
+- Published menu key remains exactly: customer-menu
+- Cashier authorization key remains exactly: pos-device-key-hash
+- Existing lib/store.mjs and all application code are unchanged from the prior
+  complete diagnostic project.
+- Do not rename the store, change its region, delete blobs, or run a migration.
+- This update does not rewrite or move any existing Blobs records.
+
+INSTALLATION
+1. Keep a backup of the working GitHub repository.
+2. Work on the separate mobile-qr-update branch, not the production branch.
+3. Replace only the root-level package.json with the one in this bundle if you
+   are updating the existing branch. The complete ZIP also contains the full
+   project for a fresh repository upload; do not delete unrelated root files.
+4. Keep Netlify Node.js at 24.x.
+5. Trigger a fresh deploy from Git after the package.json change.
+6. Confirm the dependency installation step completes before testing the preview.
+7. Check /api/mobile-menu with a read-only request first. Do not test writes in a
+   preview unless you intend to change the shared live menu.
+8. Do not reset cashier authorization or delete/recreate any Blobs records.
+
+VERIFICATION LIMITS
+This bundle was checked locally for JSON validity, JavaScript syntax, folder
+layout, and ZIP integrity. The build environment here could not reach npm to run a
+full dependency installation. A live Netlify build and Blobs read test can only
+be confirmed after deployment.

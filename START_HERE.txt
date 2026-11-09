@@ -1,0 +1,48 @@
+39ERS DELIGHTS — COMPLETE PROJECT WITH BLOBS DEPENDENCY INSTALL FIX
+
+This is a complete Netlify project bundle. Extract the ZIP and upload its CONTENTS
+at the repository root, preserving the folder structure. When updating an existing
+repository, you can instead replace only the root-level package.json from this bundle.
+
+DEPENDENCY FIX
+- package.json pins @netlify/blobs to 11.1.7.
+- npm overrides pins transitive @netlify/otel to 7.0.6 to avoid the reported
+  @netlify/otel@^7.0.7 ETARGET error.
+- Keep Netlify Node.js at 24.x.
+- Existing Blobs store, keys, menu format and storage helper are unchanged.
+- See BLOBS_SDK_UPGRADE_NOTES.txt before deployment.
+
+IMPORTANT
+- Work on your mobile-qr-update branch first, not the production branch.
+- Make a backup of your GitHub repository before replacing files.
+- Do not delete the existing Netlify Blobs store or reset cashier authorization.
+- Do not commit private tokens, passwords, or environment-variable values.
+- This source bundle does not contain live sales, inventory, orders, browser storage,
+  device keys, or secrets. Those remain in their existing locations.
+
+PROJECT LAYOUT
+- public/index.html: full POS and mobile QR customer page
+- public/assets/39ers-delights-jingle.mp3: supplied jingle
+- netlify/functions/mobile-menu.mjs: public menu read and cashier menu publish
+- netlify/functions/mobile-orders.mjs: mobile order API
+- netlify/functions/reset-pos-device.mjs: protected cashier-device reset endpoint
+- lib/store.mjs: shared Netlify Blobs storage helper
+- docs/: existing Google Sheets setup and sync source
+- netlify.toml: publish and function paths
+- package.json: Blobs dependency and npm override
+
+DEPLOYMENT
+1. Extract the ZIP.
+2. Upload the contents to the GitHub repository root, preserving the paths above.
+3. Keep unrelated existing root-level files; do not delete legacy files simply
+   because the structured copies are inside public/, netlify/functions/, or lib/.
+4. Keep netlify.toml publishing public and using netlify/functions.
+5. Keep Node.js at 24.x.
+6. Deploy the mobile-qr-update branch first. Confirm npm dependency installation
+   completes before checking /api/mobile-menu.
+7. Use a read-only menu check first; site-wide Blobs data may be shared with production.
+8. Merge only after the preview and POS workflows are tested.
+
+The project has passed local JSON, JavaScript syntax, and ZIP checks. The full npm
+install could not be run in this environment, so the Netlify build result must be
+confirmed after deployment.

@@ -1,0 +1,21 @@
+39ers Delights POS — Google Sheets + CEO Dashboard Setup
+
+IMPORTANT: For live Google Sheets updates, deploy the included 39ers_delights_google_sheets_sync.gs script and configure its /exec URL in the POS. The POS cannot activate a Google deployment on your behalf.
+
+ONE-TIME SETUP
+1. Create/open the destination Google Sheet.
+2. Open Extensions → Apps Script. Replace the existing script with the contents of 39ers_delights_google_sheets_sync.gs, then Save.
+3. In Apps Script, select setupPosSheets and click Run once. Approve the requested spreadsheet permissions.
+4. Click Deploy → New deployment → Web app. Set Execute as: Me. Choose access appropriate for your store; anyone-with-link access means the endpoint is public, so use a dedicated sheet and do not put confidential information there. Deploy and copy the URL ending /exec.
+5. In the POS, open Manager’s Tab → Google Sheets Sync, enter the Manager PIN, paste the /exec URL, and Save Connection. The POS immediately sends a snapshot. Verify the Sync Status tab timestamp.
+
+AUTOMATIC DATA SYNC
+After successful orders and other tracked POS changes, the browser schedules an automatic snapshot sync. It includes Sales Transactions, Sales Items, Audit History, Voided Transactions, Menu Catalog, Inventory, CEO Summary, CEO Item Report, CEO Daily Trend, CEO Transactions, CEO Insights, and Sync Status. CEO reports cover Today, Last 7 days, Current calendar month, and Previous + current calendar month. Reports are derived from the browser's saved transaction history, so keep that browser data backed up. If the browser is offline or closed before a queued sync sends, changes wait until a later tracked change or manual Sync All Data Now. The current fetch mode cannot verify that Google completed the write; check Sync Status and the newest rows in the sheet.
+
+EXCEL EXPORT
+Open the CEO Dashboard, select a reporting period, and click Download Excel. It downloads an Excel-readable .xls workbook with separate worksheets for Executive Summary, Item Performance, Successful Orders, Daily Sales Trend, and Business Insights. The existing CSV export remains available too.
+
+NOTES
+- This POS uses a browser-side Manager PIN gate for settings and a separate browser-side CEO PIN for the dashboard; these are not server-side authentication.
+- Do not use a publicly accessible Apps Script endpoint for sensitive records without reviewing access controls.
+- The dashboard is sales reporting, not profit accounting.
