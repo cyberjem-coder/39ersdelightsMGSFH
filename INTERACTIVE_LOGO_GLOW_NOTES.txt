@@ -1,0 +1,21 @@
+39ERS DELIGHTS — INTERACTIVE FUTURISTIC LOGO GLOW UPDATE
+
+Scope:
+- Adds a soft animated gold aura and two orbiting light rings around the existing official logo on the customer-facing mobile QR page.
+- The logo reacts to mouse movement, touchscreen taps, and keyboard focus with a brighter moving highlight and short glow pulse.
+- Respects the device's reduced-motion accessibility preference.
+
+Files changed:
+- public/index.html only.
+
+Preserved:
+- Official logo image asset and all existing image artwork.
+- All POS, checkout, sales, inventory, Sold Out, VAT, discounts, promotions, receipts, reports, QR ordering, mobile-order processing, jingle/audio, Netlify functions, Blobs storage, Google Sheets files, configuration, and dependency versions.
+- No stored Netlify Blobs data is included in or modified by this package.
+
+Installation (main branch):
+1. Back up the current repository.
+2. Replace only public/index.html with the file in this patch.
+3. Do not delete or replace any other file.
+4. Commit and let Netlify deploy.
+5. Test the mobile QR page on an actual phone.
