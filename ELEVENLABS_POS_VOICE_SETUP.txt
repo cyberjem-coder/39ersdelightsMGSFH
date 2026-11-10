@@ -1,0 +1,79 @@
+39ERS DELIGHTS POS — ELEVENLABS VOICE SETUP
+===========================================
+
+WHAT THIS ADD-ON DOES
+---------------------
+- Adds ElevenLabs text-to-speech to the existing cashier POS voice announcements.
+- Uses a friendly, energetic female voice selected from the ElevenLabs Voice Library.
+- Adds a Filipino + English (Taglish) voice-language option and uses Taglish for the default announcement scripts.
+- Announces the existing POS voice events, including new mobile orders, imported mobile orders, and transaction/checkout read-outs.
+- Keeps the existing browser SpeechSynthesis voice as an automatic fallback.
+- Keeps the existing click sounds, Sound & Voice ON/OFF control, and optional external AI voice endpoint.
+- Adds a small ElevenLabs status indicator and a Test ElevenLabs button in the POS header.
+
+IMPORTANT: NO API KEY IS INCLUDED IN THIS ZIP.
+The API key and voice ID must be entered as Netlify environment variables. Never put either value in GitHub, HTML, JavaScript, this setup file, or a chat message.
+
+REQUIREMENTS
+------------
+1. An ElevenLabs account with access to the Text to Speech API.
+2. An API key allowed to use Text to Speech.
+3. A voice selected from your ElevenLabs Voice Library.
+4. A paid/commercial plan that permits your intended business use, according to your ElevenLabs plan and terms.
+
+VOICE SELECTION
+---------------
+In the ElevenLabs Voice Library, choose a voice that is:
+- Female
+- Energetic, friendly, warm and welcoming
+- Suitable for Filipino/Tagalog and English speech
+- Licensed for the intended business/commercial use under your plan
+
+Copy that voice's Voice ID. The integration does not guess or hard-code a voice ID because the correct voice must be selected from your own ElevenLabs account.
+
+NETLIFY ENVIRONMENT VARIABLES
+-----------------------------
+Open the Netlify project that deploys the POS production site, then open Environment variables.
+Add these values:
+
+ELEVENLABS_API_KEY      = your private ElevenLabs API key
+ELEVENLABS_VOICE_ID     = the selected female voice ID
+ELEVENLABS_MODEL_ID     = eleven_flash_v2_5
+
+ELEVENLABS_MODEL_ID is optional; if omitted, the function defaults to eleven_flash_v2_5.
+
+Set the variables for the Functions/runtime scope (or All scopes if Netlify only offers that selection), save them, and trigger a fresh deploy. Do not paste the values into GitHub or send them to anyone.
+
+For stronger cost control, restrict the ElevenLabs API key to the Text to Speech capability if available, and set a custom credit/usage limit on the key. API speech generation consumes account credits according to the text sent and your plan.
+
+HOW TO TEST
+-----------
+1. Keep the Netlify Node.js setting at 24.x.
+2. Wait for the deployment to say Published.
+3. Open the cashier POS in the registered Chrome profile.
+4. Make sure Sound & Voice is ON.
+5. Choose Filipino + English (Taglish) in the Voice selector.
+6. Check the header status. It should say ElevenLabs: Ready.
+7. Click Test ElevenLabs. You should hear a friendly Taglish test announcement.
+8. Test a new mobile order and a completed transaction announcement.
+
+IF IT SAYS ELEVENLABS: FALLBACK
+-------------------------------
+- Confirm ELEVENLABS_API_KEY and ELEVENLABS_VOICE_ID are spelled exactly as above.
+- Confirm both are set on the correct Netlify production site and Functions scope.
+- Redeploy after saving environment variables.
+- Make sure the selected voice ID belongs to the same ElevenLabs account as the API key.
+- Check that the API key has Text to Speech access and sufficient credits.
+
+FEATURE PRESERVATION / FAILURE BEHAVIOR
+---------------------------------------
+- The API key remains server-side in Netlify; it is never sent to the browser.
+- The new /api/elevenlabs-voice function requires the already registered cashier device key before generating audio.
+- If ElevenLabs is not configured, offline, rate-limited, or temporarily unavailable, the POS falls back to its existing browser speech voice.
+- Voice generation is optional and is not part of the checkout, inventory, payment, order storage, Blobs menu storage, or Google Sheets transaction path. A voice failure must not prevent a sale or order action.
+- Existing Blobs store name and keys are unchanged.
+- No sales, inventory, orders, or other live data are included in this source ZIP or modified by the add-on.
+
+MODEL CHOICE
+------------
+The default model is eleven_flash_v2_5 because it is a low-latency model and officially supports Filipino and English. The same voice and script are used for Taglish. You may override the model by setting ELEVENLABS_MODEL_ID in Netlify, but use a model that supports both Filipino and English.

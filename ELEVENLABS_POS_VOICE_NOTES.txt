@@ -1,0 +1,16 @@
+ElevenLabs POS voice integration added as an optional server-side capability.
+
+New function:
+- netlify/functions/elevenlabs-voice.mjs
+- Route: /api/elevenlabs-voice
+- GET returns a non-secret configured/not-configured status.
+- POST authenticates the registered cashier device through the existing POS device key, then calls ElevenLabs TTS.
+
+New environment variables (not included in source):
+- ELEVENLABS_API_KEY
+- ELEVENLABS_VOICE_ID
+- Optional ELEVENLABS_MODEL_ID (defaults to eleven_flash_v2_5)
+
+The public API key is never placed in client-side JavaScript. The front end calls only the same-origin Netlify function. Existing speechSynthesis and optional external AI endpoint remain as fallbacks.
+
+Default voice preference in the front-end selector is Filipino + English (Taglish), unless the cashier has a newer saved language choice. The existing Tagalog and English selections remain available.
