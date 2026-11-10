@@ -260,10 +260,8 @@
                 </div>
 
                 <button id="audio-assistant-toggle" onclick="toggleAudioAssistant()" title="Turn click sounds and friendly voice announcements on/off" class="px-3.5 py-2 rounded-xl bg-emerald-900/50 hover:bg-emerald-800 border border-emerald-400/30 text-emerald-300 hover:text-white transition flex items-center gap-2 text-xs font-semibold shadow-sm"><i id="audio-assistant-icon" class="fa-solid fa-volume-high"></i><span id="audio-assistant-label">Sound & Voice: ON</span></button>
-                <label class="flex items-center gap-2 px-2 py-1 rounded-xl bg-mocha-800 border border-gold-500/20 text-xs text-gray-300" title="Choose the voice language"><span>Voice</span><select id="pos-voice-language" onchange="setPosVoiceLanguage(this.value)" class="bg-mocha-900 text-gold-300 rounded-md px-2 py-1 outline-none"><option value="fil-en-PH">Filipino + English (Taglish)</option><option value="fil-PH">Tagalog</option><option value="en-PH">English</option></select></label>
-                <button onclick="configureAiVoiceEndpoint()" title="Configure an optional external AI voice endpoint" class="px-3 py-2 rounded-xl bg-violet-900/50 hover:bg-violet-800 border border-violet-400/30 text-violet-200 hover:text-white transition flex items-center gap-2 text-xs font-semibold shadow-sm"><i class="fa-solid fa-wand-magic-sparkles"></i><span>AI Voice Setup</span></button>
-                <span id="elevenlabs-voice-status" class="px-2 py-1 rounded-lg bg-gray-800/70 border border-gold-500/20 text-[10px] text-gray-400 whitespace-nowrap" title="ElevenLabs status is configured securely in Netlify">ElevenLabs: Checking</span>
-                <button onclick="testElevenLabsVoice()" title="Test the configured ElevenLabs Filipino-English POS voice" class="px-3 py-2 rounded-xl bg-amber-900/50 hover:bg-amber-800 border border-amber-400/30 text-amber-200 hover:text-white transition flex items-center gap-2 text-xs font-semibold shadow-sm"><i class="fa-solid fa-headphones"></i><span>Test ElevenLabs</span></button>
+                <label class="flex items-center gap-2 px-2 py-1 rounded-xl bg-mocha-800 border border-gold-500/20 text-xs text-gray-300" title="Choose the voice language"><span>Voice</span><select id="pos-voice-language" onchange="setPosVoiceLanguage(this.value)" class="bg-mocha-900 text-gold-300 rounded-md px-2 py-1 outline-none"><option value="fil-PH">Tagalog</option><option value="en-PH">English</option></select></label>
+                <button onclick="configureAiVoiceEndpoint()" title="Configure online AI voice service" class="px-3 py-2 rounded-xl bg-violet-900/50 hover:bg-violet-800 border border-violet-400/30 text-violet-200 hover:text-white transition flex items-center gap-2 text-xs font-semibold shadow-sm"><i class="fa-solid fa-wand-magic-sparkles"></i><span>AI Voice Setup</span></button>
                 <button onclick="openCustomerQrModal()" class="px-3.5 py-2 rounded-xl bg-sky-900/50 hover:bg-sky-800 border border-sky-400/30 text-sky-300 hover:text-white transition flex items-center gap-2 text-xs font-semibold shadow-sm"><i class="fa-solid fa-qrcode"></i><span>Customer QR / Mobile Order</span></button>
                 <button onclick="openIncomingOrdersModal()" class="relative px-3.5 py-2 rounded-xl bg-indigo-900/50 hover:bg-indigo-800 border border-indigo-400/30 text-indigo-300 hover:text-white transition flex items-center gap-2 text-xs font-semibold shadow-sm"><i class="fa-solid fa-bell"></i><span>Incoming Orders</span><span id="mobile-orders-badge" class="hidden rounded-full bg-rose-500 text-white text-[10px] px-1.5 py-0.5">0</span></button>
                 <button onclick="promptManagerAccess()" class="px-3.5 py-2 rounded-xl bg-mocha-700 hover:bg-mocha-600 border border-gold-500/30 text-gold-400 hover:text-white transition flex items-center gap-2 text-xs font-semibold shadow-sm">
@@ -1071,13 +1069,7 @@
         let audioAssistantEnabled = localStorage.getItem('pos_audio_assistant_enabled_v1') !== 'false';
         // Optional secure server-side AI TTS endpoint. No provider secret/API key is stored in this HTML.
         let aiVoiceEndpoint = localStorage.getItem('pos_ai_voice_endpoint_v1') || '';
-        const savedPosVoiceLanguageV2 = localStorage.getItem('pos_voice_language_v2');
-        const legacyPosVoiceLanguage = localStorage.getItem('pos_voice_language_v1');
-        let posVoiceLanguage = ['fil-en-PH', 'fil-PH', 'en-PH'].includes(savedPosVoiceLanguageV2)
-            ? savedPosVoiceLanguageV2
-            : (legacyPosVoiceLanguage === 'en-PH' ? 'en-PH' : 'fil-en-PH');
-        let elevenLabsVoiceReady = false;
-        let elevenLabsVoiceStatusChecked = false;
+        let posVoiceLanguage = localStorage.getItem('pos_voice_language_v1') === 'en-PH' ? 'en-PH' : 'fil-PH';
         let activeAiAudio = null;
         let aiVoiceRequestToken = 0;
         let audioContext = null;
@@ -1106,7 +1098,6 @@
             const scannerInput = document.getElementById('barcode-scan-input');
             if (scannerInput) scannerInput.focus();
             updateAudioAssistantButton();
-            refreshElevenLabsVoiceStatus();
             const voiceLanguageSelect = document.getElementById('pos-voice-language');
             if (voiceLanguageSelect) voiceLanguageSelect.value = posVoiceLanguage;
             // Click sounds are delegated so newly rendered POS controls are covered too.
@@ -1131,11 +1122,7 @@
             updateAudioAssistantButton();
             if (audioAssistantEnabled) {
                 playPosClickSound();
-                speakPosMessage(posVoiceLanguage === 'en-PH'
-                    ? 'Hello! Sound and voice announcements are now on. Thank you for choosing 39ers Delights!'
-                    : posVoiceLanguage === 'fil-PH'
-                        ? 'Magandang araw po! Naka-on na ang mga tunog at voice announcement. Maraming salamat sa pagpili ng 39ers Delights!'
-                        : 'Hello po! Sound and voice announcements are now ON. Welcome to 39ers Delights. Maraming salamat po!');
+                speakPosMessage(posVoiceLanguage === 'en-PH' ? 'Hello! Sound and voice announcements are now on. Thank you for choosing 39ers Delights!' : 'Magandang araw po! Naka-on na ang mga tunog at voice announcement. Maraming salamat sa pagpili ng 39ers Delights!');
             } else {
                 aiVoiceRequestToken++;
                 if (activeAiAudio) { activeAiAudio.pause(); activeAiAudio = null; }
@@ -1167,23 +1154,14 @@
         // has one installed; browser speech voices are supplied by the operating system.
         let posPreferredVoice = null;
         function setPosVoiceLanguage(language) {
-            posVoiceLanguage = ['fil-en-PH', 'fil-PH', 'en-PH'].includes(language) ? language : 'fil-en-PH';
+            posVoiceLanguage = language === 'en-PH' ? 'en-PH' : 'fil-PH';
             localStorage.setItem('pos_voice_language_v1', posVoiceLanguage);
-            localStorage.setItem('pos_voice_language_v2', posVoiceLanguage);
             posPreferredVoice = choosePosVoice();
             aiVoiceRequestToken++;
             if (activeAiAudio) { activeAiAudio.pause(); activeAiAudio.src = ''; activeAiAudio = null; }
             if ('speechSynthesis' in window) window.speechSynthesis.cancel();
-            const languageLabel = posVoiceLanguage === 'en-PH' ? 'English' : posVoiceLanguage === 'fil-PH' ? 'Tagalog' : 'Filipino and English (Taglish)';
-            showToast(`Voice language set to ${languageLabel}.`, 'success');
-            if (audioAssistantEnabled) {
-                const sample = posVoiceLanguage === 'en-PH'
-                    ? 'English voice selected. Voice announcements will now speak in English.'
-                    : posVoiceLanguage === 'fil-PH'
-                        ? 'Napili ang wikang Tagalog. Mula ngayon, magsasalita sa Tagalog ang mga voice announcement.'
-                        : 'Taglish voice selected po! I will use a friendly mix of Filipino and English for POS announcements. Salamat!';
-                speakPosMessage(sample);
-            }
+            showToast(`Voice language set to ${posVoiceLanguage === 'en-PH' ? 'English' : 'Tagalog'}.`, 'success');
+            if (audioAssistantEnabled) speakPosMessage(posVoiceLanguage === 'en-PH' ? 'English voice selected. Voice announcements will now speak in English.' : 'Napili ang wikang Tagalog. Mula ngayon, magsasalita sa Tagalog ang mga voice announcement.');
         }
         function choosePosVoice() {
             if (!('speechSynthesis' in window)) return null;
@@ -1191,9 +1169,7 @@
             if (!voices.length) return null;
             const tagalog = voices.filter(v => /^(fil|tl)([-_]|$)/i.test(v.lang || '') || /filipino|tagalog/i.test(v.name || ''));
             const english = voices.filter(v => /^en([_-]|$)/i.test(v.lang || ''));
-            const pool = posVoiceLanguage === 'en-PH'
-                ? (english.length ? english : voices)
-                : (tagalog.length ? tagalog : english.length ? english : voices);
+            const pool = posVoiceLanguage === 'en-PH' ? (english.length ? english : voices) : (tagalog.length ? tagalog : english.length ? english : voices);
             const score = v => {
                 const n = (v.name || '').toLowerCase();
                 let points = 0;
@@ -1215,7 +1191,7 @@
         function configureAiVoiceEndpoint() {
             const current = aiVoiceEndpoint || '';
             const value = window.prompt(
-                'Optional external AI voice endpoint URL. It must be your trusted HTTPS backend, allow this page through CORS, accept POST JSON containing text and language (fil-en-PH, fil-PH or en-PH), and return audio bytes (MP3/WAV) or JSON containing audioUrl. The built-in ElevenLabs endpoint is configured securely in Netlify. Never paste an API key here.',
+                'Optional online AI voice endpoint URL. It must be your trusted HTTPS backend, allow this page through CORS, accept POST JSON containing text and language (fil-PH or en-PH), and return audio bytes (MP3/WAV) or JSON containing audioUrl. Do not paste an AI provider API key here.',
                 current
             );
             if (value === null) return;
@@ -1227,105 +1203,42 @@
             aiVoiceEndpoint = trimmed;
             localStorage.setItem('pos_ai_voice_endpoint_v1', aiVoiceEndpoint);
             showToast(aiVoiceEndpoint ? 'Online AI voice endpoint saved. It will be tried automatically when online.' : 'Online AI voice endpoint cleared. Using available browser voices.', 'success');
-            if (aiVoiceEndpoint && audioAssistantEnabled) speakPosMessage(posVoiceLanguage === 'en-PH' ? 'Hello! Testing the online AI voice.' : posVoiceLanguage === 'fil-PH' ? 'Kumusta po! Susubukan natin ang online AI voice.' : 'Hello po! Testing the online AI voice natin. Kumusta!');
-        }
-        function updateElevenLabsVoiceStatus(configured, label = '') {
-            const status = document.getElementById('elevenlabs-voice-status');
-            if (!status) return;
-            status.textContent = label || (configured ? 'ElevenLabs: Configured' : 'ElevenLabs: Fallback');
-            status.className = `px-2 py-1 rounded-lg border text-[10px] whitespace-nowrap ${configured ? 'bg-emerald-900/50 border-emerald-400/30 text-emerald-300' : 'bg-gray-800/70 border-gray-600/30 text-gray-400'}`;
-        }
-        async function refreshElevenLabsVoiceStatus() {
-            try {
-                const response = await fetch('/api/elevenlabs-voice', { method: 'GET', cache: 'no-store', headers: { 'Accept': 'application/json' } });
-                const result = await response.json().catch(() => ({}));
-                elevenLabsVoiceReady = Boolean(response.ok && result.ok && result.configured);
-                elevenLabsVoiceStatusChecked = true;
-                updateElevenLabsVoiceStatus(elevenLabsVoiceReady);
-                return elevenLabsVoiceReady;
-            } catch (_) {
-                elevenLabsVoiceReady = false;
-                elevenLabsVoiceStatusChecked = true;
-                updateElevenLabsVoiceStatus(false, 'ElevenLabs: Offline');
-                return false;
-            }
-        }
-        async function testElevenLabsVoice() {
-            if (!audioAssistantEnabled) {
-                showToast('Turn Sound & Voice ON before testing the AI voice.', 'info');
-                return;
-            }
-            const ready = await refreshElevenLabsVoiceStatus();
-            if (!ready) {
-                showToast('ElevenLabs is not configured yet. Add ELEVENLABS_API_KEY and ELEVENLABS_VOICE_ID in Netlify Environment Variables, then redeploy.', 'warning');
-                return;
-            }
-            const testMessage = 'Hello po! Welcome to 39ers Delights. Ready na po ang POS voice assistant natin. Let us serve our customers with a smile. Maraming salamat!';
-            const token = ++aiVoiceRequestToken;
-            if (activeAiAudio) { activeAiAudio.pause(); activeAiAudio.src = ''; activeAiAudio = null; }
-            if ('speechSynthesis' in window) window.speechSynthesis.cancel();
-            const played = await tryOnlineAiVoice(testMessage, { elevenLabsOnly: true, lang: posVoiceLanguage }, token);
-            if (played) {
-                showToast('ElevenLabs test audio played successfully.', 'success');
-                return;
-            }
-            showToast('ElevenLabs did not return audio. Using the browser voice fallback; check your API key, Voice ID and credits.', 'warning');
-            speakPosMessage(testMessage, { skipOnline: true, rate: 0.94, pitch: 1.05 });
+            if (aiVoiceEndpoint && audioAssistantEnabled) speakPosMessage(posVoiceLanguage === 'en-PH' ? 'Hello! Testing the online AI voice.' : 'Kumusta po! Susubukan natin ang online AI voice.');
         }
         async function tryOnlineAiVoice(message, options = {}, token) {
-            if (!navigator.onLine || typeof fetch !== 'function') return false;
-            const endpoints = [];
-            if (elevenLabsVoiceReady) {
-                endpoints.push({
-                    url: '/api/elevenlabs-voice',
-                    headers: { 'x-store-key': getStoreDeviceKey() },
-                    body: { text: String(message), language: options.lang || posVoiceLanguage, style: 'energetic-friendly' }
+            if (!aiVoiceEndpoint || !navigator.onLine || typeof fetch !== 'function') return false;
+            try {
+                const response = await fetch(aiVoiceEndpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Accept': 'audio/mpeg, audio/wav, audio/*, application/json' },
+                    body: JSON.stringify({ text: String(message), language: options.lang || posVoiceLanguage, voice: options.voice || (posVoiceLanguage === 'en-PH' ? 'natural-english' : 'natural-tagalog'), style: 'warm-conversational' })
                 });
-            }
-            // Preserve the previously supported optional custom AI voice endpoint.
-            if (aiVoiceEndpoint && !options.elevenLabsOnly) {
-                endpoints.push({
-                    url: aiVoiceEndpoint,
-                    headers: {},
-                    body: { text: String(message), language: options.lang || posVoiceLanguage, voice: options.voice || (posVoiceLanguage === 'en-PH' ? 'natural-english' : 'natural-tagalog'), style: 'warm-conversational' }
-                });
-            }
-            for (const endpoint of endpoints) {
-                try {
-                    const response = await fetch(endpoint.url, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json', 'Accept': 'audio/mpeg, audio/wav, audio/*, application/json', ...endpoint.headers },
-                        body: JSON.stringify(endpoint.body),
-                        cache: 'no-store'
-                    });
-                    if (!response.ok) throw new Error('AI voice service returned ' + response.status);
-                    let audioBlob;
-                    const type = (response.headers.get('content-type') || '').toLowerCase();
-                    if (type.includes('application/json')) {
-                        const data = await response.json();
-                        const audioUrl = data.audioUrl || data.audio_url || data.url;
-                        if (!audioUrl) throw new Error('AI voice response did not include audioUrl');
-                        const audioResponse = await fetch(audioUrl);
-                        if (!audioResponse.ok) throw new Error('Could not download AI voice audio');
-                        audioBlob = await audioResponse.blob();
-                    } else {
-                        audioBlob = await response.blob();
-                    }
-                    if (token !== aiVoiceRequestToken || !audioBlob || !audioBlob.size) return true;
-                    if (activeAiAudio) { activeAiAudio.pause(); activeAiAudio.src = ''; }
-                    const audioUrl = URL.createObjectURL(audioBlob);
-                    activeAiAudio = new Audio(audioUrl);
-                    activeAiAudio.onended = () => { URL.revokeObjectURL(audioUrl); if (activeAiAudio?.src) activeAiAudio = null; };
-                    activeAiAudio.onerror = () => { URL.revokeObjectURL(audioUrl); activeAiAudio = null; };
-                    await activeAiAudio.play();
-                    return true;
-                } catch (error) {
-                    // Voice service errors never interrupt checkout or other POS actions.
-                    console.warn('Online AI voice endpoint unavailable; trying the next voice fallback.', error);
+                if (!response.ok) throw new Error('AI voice service returned ' + response.status);
+                let audioBlob;
+                const type = (response.headers.get('content-type') || '').toLowerCase();
+                if (type.includes('application/json')) {
+                    const data = await response.json();
+                    const audioUrl = data.audioUrl || data.audio_url || data.url;
+                    if (!audioUrl) throw new Error('AI voice response did not include audioUrl');
+                    const audioResponse = await fetch(audioUrl);
+                    if (!audioResponse.ok) throw new Error('Could not download AI voice audio');
+                    audioBlob = await audioResponse.blob();
+                } else {
+                    audioBlob = await response.blob();
                 }
+                if (token !== aiVoiceRequestToken || !audioBlob || !audioBlob.size) return true;
+                if (activeAiAudio) { activeAiAudio.pause(); activeAiAudio.src = ''; }
+                const audioUrl = URL.createObjectURL(audioBlob);
+                activeAiAudio = new Audio(audioUrl);
+                activeAiAudio.onended = () => { URL.revokeObjectURL(audioUrl); if (activeAiAudio?.src) activeAiAudio = null; };
+                activeAiAudio.onerror = () => { URL.revokeObjectURL(audioUrl); activeAiAudio = null; };
+                await activeAiAudio.play();
+                return true;
+            } catch (error) {
+                // Offline, unavailable service, CORS or network errors transparently fall back to browser speech.
+                console.warn('Online AI voice unavailable; using browser voice instead.', error);
+                return false;
             }
-            // If ElevenLabs is not configured or temporarily unavailable, preserve the existing browser speech fallback.
-            return false;
         }
         function speakPosMessage(message, options = {}) {
             if (!audioAssistantEnabled || !message) return;
@@ -1333,7 +1246,7 @@
             if (activeAiAudio) { activeAiAudio.pause(); activeAiAudio = null; }
             if ('speechSynthesis' in window) window.speechSynthesis.cancel();
             (async () => {
-                const onlinePlayed = options.skipOnline ? false : await tryOnlineAiVoice(message, options, token);
+                const onlinePlayed = await tryOnlineAiVoice(message, options, token);
                 if (onlinePlayed || token !== aiVoiceRequestToken || !audioAssistantEnabled) return;
                 if (!('speechSynthesis' in window)) return;
                 try {
@@ -1366,18 +1279,13 @@
             const change = Number(record.changeGiven ?? record.change) || 0;
             const changeText = change.toLocaleString('en-PH', {minimumFractionDigits: 2, maximumFractionDigits: 2});
             const english = posVoiceLanguage === 'en-PH';
-            const taglish = posVoiceLanguage === 'fil-en-PH';
             const message = grateful
-                ? (taglish
-                    ? `Great! Complete na po ang purchase ninyo. Thank you for ordering from 39ers Delights. Your order includes ${items || 'your selected items'}. The total is ${totalText} pesos. ${change > 0 ? `Your change is ${changeText} pesos. ` : ''}Maraming salamat po for your support. Ingat po kayo, and we hope to see you again!`
-                    : english
-                        ? `Great! Your purchase is complete. Thank you for ordering from 39ers Delights. Your order is ${items || 'your selected items'}. The total is ${totalText} pesos. ${change > 0 ? `Your change is ${changeText} pesos. ` : ''}Thank you for your support. Take care, and we hope to see you again!`
-                        : `Ayos! Tapos na ang inyong pagbili. Maraming salamat sa pag-order sa 39ers Delights. Ang inyong order ay ${items || 'ang mga pinili ninyong produkto'}. Ang kabuuang bayad ay ${totalText} pesos. ${change > 0 ? `Ang inyong sukli ay ${changeText} pesos. ` : ''}Maraming salamat po sa inyong suporta. Ingat po kayo, at sana ay bumalik kayo muli!`)
-                : (taglish
-                    ? `Transaction number ${record.id || record.ref || ''}. ${mode === 'dine-in' ? 'Dine in po' : mode === 'takeout' ? 'Takeout po' : mode}. Order items: ${items || 'no product details recorded'}. Total amount is ${totalText} pesos. Payment method: ${record.paymentMethod || record.method || 'not recorded'}. Salamat po!`
-                    : english
-                        ? `Transaction number ${record.id || record.ref || ''}. ${mode === 'dine-in' ? 'Dine in' : mode === 'takeout' ? 'Takeout' : mode}. Order items: ${items || 'no product details recorded'}. The total amount is ${totalText} pesos. Payment method: ${record.paymentMethod || record.method || 'not recorded'}.`
-                        : `Transaksyon numero ${record.id || record.ref || ''}. ${mode === 'dine-in' ? 'Dito kakain' : mode === 'takeout' ? 'Takeout po' : mode}. Ang order ay ${items || 'walang nakatalang detalye ng produkto'}. Ang kabuuang halaga ay ${totalText} pesos. Paraan ng bayad: ${record.paymentMethod || record.method || 'hindi nakatala'}.`);
+                ? (english
+                    ? `Great! Your purchase is complete. Thank you for ordering from 39ers Delights. Your order is ${items || 'your selected items'}. The total is ${totalText} pesos. ${change > 0 ? `Your change is ${changeText} pesos. ` : ''}Thank you for your support. Take care, and we hope to see you again!`
+                    : `Ayos! Tapos na ang inyong pagbili. Maraming salamat sa pag-order sa 39ers Delights. Ang inyong order ay ${items || 'ang mga pinili ninyong produkto'}. Ang kabuuang bayad ay ${totalText} pesos. ${change > 0 ? `Ang inyong sukli ay ${changeText} pesos. ` : ''}Maraming salamat po sa inyong suporta. Ingat po kayo, at sana ay bumalik kayo muli!`)
+                : (english
+                    ? `Transaction number ${record.id || record.ref || ''}. ${mode === 'dine-in' ? 'Dine in' : mode === 'takeout' ? 'Takeout' : mode}. Order items: ${items || 'no product details recorded'}. The total amount is ${totalText} pesos. Payment method: ${record.paymentMethod || record.method || 'not recorded'}.`
+                    : `Transaksyon numero ${record.id || record.ref || ''}. ${mode === 'dine-in' ? 'Dito kakain' : mode === 'takeout' ? 'Takeout po' : mode}. Ang order ay ${items || 'walang nakatalang detalye ng produkto'}. Ang kabuuang halaga ay ${totalText} pesos. Paraan ng bayad: ${record.paymentMethod || record.method || 'hindi nakatala'}.`);
             speakPosMessage(message, {rate: grateful ? 0.86 : 0.88, pitch: 1.0});
         }
         function readSelectedTransaction(id) {
@@ -1583,10 +1491,8 @@
                     showToast(`New mobile order received${order.code ? ` #${order.code}` : ''}!`, 'info');
                     speakPosMessage(posVoiceLanguage === 'en-PH'
                         ? `A new mobile order has arrived from ${order.station || 'counter'}. ${summary ? `The order is ${summary}. ` : ''}Please review the order when you are ready. Thank you!`
-                        : posVoiceLanguage === 'fil-PH'
-                            ? `May bagong mobile order po mula sa ${order.station || 'counter'}. ${summary ? `Ang order ay ${summary}. ` : ''}Pakisuri po ang order kapag handa na kayo. Maraming salamat!`
-                            : `May bagong mobile order po from ${order.station || 'counter'}. ${summary ? `Order details: ${summary}. ` : ''}Please review the order when ready. Thank you po!`,
-                        { rate: 0.92, pitch: 1.04 });
+                        : `May bagong mobile order po mula sa ${order.station || 'counter'}. ${summary ? `Ang order ay ${summary}. ` : ''}Pakisuri po ang order kapag handa na kayo. Maraming salamat!`,
+                        { rate: 0.87, pitch: 1.0 });
                 }
                 const badge = document.getElementById('mobile-orders-badge');
                 if (badge) { badge.textContent = String(incomingMobileOrders.length); badge.classList.toggle('hidden', incomingMobileOrders.length === 0); }
@@ -1687,12 +1593,7 @@
                 showToast(`Mobile order ${order.code || ''} imported to the POS cart. Review it before checkout.`);
                 playPosClickSound('notification');
                 const spokenItems = (order.items || []).map(item => `${Number(item.qty) || 1} ${item.itemName || 'item'}${item.variantName ? ` ${item.variantName}` : ''}`).join(', ');
-                speakPosMessage(posVoiceLanguage === 'en-PH'
-                    ? `Mobile order ${order.code || ''} has been added to the POS cart. ${spokenItems ? `Items: ${spokenItems}. ` : ''}Please review everything before checkout. Thank you!`
-                    : posVoiceLanguage === 'fil-PH'
-                        ? `Ang mobile order ${order.code || ''} ay nailagay na sa cart. ${spokenItems ? `Kasama sa order ang ${spokenItems}. ` : ''}Pakisuri po ang mga item bago magbayad. Maraming salamat!`
-                        : `Na-add na po sa POS cart ang mobile order ${order.code || ''}. ${spokenItems ? `Items: ${spokenItems}. ` : ''}Please review all items before checkout. Salamat po!`,
-                    { rate: 0.92, pitch: 1.04 });
+                speakPosMessage(`Ang mobile order ${order.code || ''} ay nailagay na sa cart. ${spokenItems ? `Kasama sa order ang ${spokenItems}. ` : ''} Pakisuri po ang mga item bago magbayad. Maraming salamat!`, { rate: 0.88, pitch: 1.0 });
                 selectedMobileOrder = null;
                 refreshMobileOrders();
             } catch (error) {

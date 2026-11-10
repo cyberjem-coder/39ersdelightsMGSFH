@@ -141,18 +141,3 @@ not a guarantee that Netlify or its storage service will never return a 502/503/
 ## Latest storage-context correction
 
 The Netlify Blobs store is now created inside each Functions v2 request handler rather than at module import time. The site-wide store name and keys are unchanged. See `REQUEST_SCOPED_BLOBS_FIX_NOTES.txt` for safe deployment instructions.
-
-## Optional ElevenLabs cashier voice (additive)
-
-This release adds an optional server-side ElevenLabs text-to-speech function for the existing POS voice announcements. The front end keeps the existing Sound & Voice ON/OFF switch, click sounds, browser speech fallback, and optional custom AI voice endpoint. A Filipino + English (Taglish) option is now available, with Taglish as the default for a first-time voice-language preference.
-
-New Netlify Function route: `/api/elevenlabs-voice`.
-
-Configure these Netlify environment variables to enable ElevenLabs:
-- `ELEVENLABS_API_KEY` — keep this secret in Netlify; never commit it to GitHub or put it in browser code.
-- `ELEVENLABS_VOICE_ID` — the female, energetic, friendly Filipino/English-capable voice selected from your ElevenLabs Voice Library.
-- `ELEVENLABS_MODEL_ID` — optional; defaults to `eleven_flash_v2_5`.
-
-After saving environment variables, redeploy the site. The POS header has an ElevenLabs status indicator and a Test ElevenLabs button. If the service is not configured or unavailable, the POS continues with its existing browser voice. The ElevenLabs endpoint authenticates the registered cashier device using the existing POS device key and existing Blobs store. It does not write or change sales, inventory, menu, or mobile-order data.
-
-See `ELEVENLABS_POS_VOICE_SETUP.txt` for setup instructions and cost/security notes.
