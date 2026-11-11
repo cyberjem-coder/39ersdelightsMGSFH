@@ -1,4 +1,5 @@
 import { createRequestStore, verifyStoreKey, json } from "../../lib/store.mjs";
+import { verifyPosSession } from "../../lib/pos-security.mjs";
 
 function cleanMenu(input) {
   if (!Array.isArray(input)) return [];
@@ -70,6 +71,7 @@ async function handleRequest(request, setStage, store) {
   }
 
   if (request.method === "PUT") {
+    if (!(await verifyPosSession(request, store))) return json({ ok: false, message: "Cashier POS is locked or the session expired. Unlock the POS and try again." }, 401);
     // Authorization itself reads/writes Blobs; keep its failure distinct from the menu write.
     setStage("cashier_authorization_storage");
     const authorized = await withStorageRetry("cashier authorization", () =>

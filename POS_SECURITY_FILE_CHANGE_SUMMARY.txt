@@ -1,0 +1,16 @@
+POS SECURITY UPDATE — FILE SUMMARY
+
+Added:
+- public/order.html (customer-only ordering page)
+- netlify/functions/pos-auth.mjs (POS PIN setup/login/change/logout API)
+- lib/pos-security.mjs (server-side PIN hash and signed session helper)
+- POS_SECURITY_SETUP.txt (deployment and owner setup instructions)
+- POS_SECURITY_FILE_CHANGE_SUMMARY.txt (this file)
+
+Modified:
+- public/index.html (PIN gate, lock controls, PIN change UI, isolated QR URL)
+- netlify/functions/mobile-menu.mjs (require POS session for cashier menu publishing)
+- netlify/functions/mobile-orders.mjs (require POS session for cashier order queue, proof retrieval, and order actions)
+- README.md (added security section)
+
+All other original project files are retained unchanged.

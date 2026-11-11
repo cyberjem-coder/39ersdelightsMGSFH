@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>39ers Delights - Mobile Ordering</title>
+    
+    <!-- Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        mocha: {
+                            900: '#100C0A',
+                            800: '#1A1412',
+                            700: '#261E1A',
+                            600: '#362B25',
+                            500: '#4A3B33',
+                        },
+                        gold: {
+                            400: '#E5C158',
+                            500: '#D4AF37',
+                            600: '#AA8A22',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Poppins', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        .glass-panel {
+            background: rgba(26, 20, 18, 0.75);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(212, 175, 55, 0.18);
+        }
+        
+        .glass-card {
+            background: rgba(38, 30, 26, 0.65);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(212, 175, 55, 0.15);
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .glass-card:hover {
+            border-color: rgba(212, 175, 55, 0.5);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px -4px rgba(212, 175, 55, 0.15);
+        }
+
+        .glass-input {
+            background: rgba(16, 12, 10, 0.6);
+            border: 1px solid rgba(212, 175, 55, 0.25);
+            color: #F3F4F6;
+        }
+
+        .glass-input:focus {
+            outline: none;
+            border-color: #D4AF37;
+            box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.2);
+        }
+
+        /* Interactive menu artwork: visual-only enhancement; product data and pricing stay untouched. */
+        .menu-visual-card {
+            cursor: zoom-in;
+            position: relative;
+            isolation: isolate;
+            transition: transform .28s ease, box-shadow .28s ease, border-color .28s ease;
+            border-color: rgba(212,175,55,.34) !important;
+        }
+        .menu-visual-card::after {
+            content: "View artwork";
+            position: absolute;
+            inset: auto 8px 34px auto;
+            z-index: 2;
+            padding: 4px 8px;
+            border-radius: 999px;
+            color: #fff4c4;
+            background: rgba(16,12,10,.82);
+            border: 1px solid rgba(245,196,76,.55);
+            font-size: 10px;
+            letter-spacing: .03em;
+            opacity: 0;
+            transform: translateY(4px);
+            transition: opacity .2s ease, transform .2s ease;
+            pointer-events: none;
+        }
+        .menu-visual-card:hover, .menu-visual-card:focus-visible {
+            transform: translateY(-3px) scale(1.012);
+            border-color: rgba(255,207,82,.95) !important;
+            box-shadow: 0 10px 28px rgba(212,175,55,.2), 0 0 0 1px rgba(255,207,82,.18);
+            outline: none;
+        }
+        .menu-visual-card:hover::after, .menu-visual-card:focus-visible::after { opacity: 1; transform: translateY(0); }
+        .menu-visual-card img { transition: transform .45s ease, filter .3s ease; }
+        .menu-visual-card:hover img, .menu-visual-card:focus-visible img { transform: scale(1.06); filter: saturate(1.12) brightness(1.04); }
+        .developer-credit-banner {
+            position: relative; overflow: hidden;
+            background: radial-gradient(ellipse at 15% 50%, rgba(212,175,55,.17), transparent 42%), linear-gradient(115deg, #100c0a, #2a1b0d 48%, #100c0a);
+            border: 1px solid rgba(212,175,55,.55);
+            box-shadow: inset 0 1px rgba(255,235,170,.12), 0 8px 24px rgba(0,0,0,.25);
+        }
+        .developer-credit-banner::before {
+            content: ""; position:absolute; inset:0; pointer-events:none;
+            background: linear-gradient(110deg, transparent 20%, rgba(255,219,110,.07) 48%, transparent 72%);
+            transform: translateX(-100%); animation: credit-sheen 9s ease-in-out infinite;
+        }
+        @keyframes credit-sheen { 0%,70%,100% { transform:translateX(-100%); } 85% { transform:translateX(100%); } }
+        @media (prefers-reduced-motion: reduce) { .menu-visual-card, .menu-visual-card img, .developer-credit-banner::before { animation:none !important; transition:none !important; } }
+        .menu-art-lightbox { position:fixed; inset:0; z-index:100; display:flex; align-items:center; justify-content:center; padding:1rem; background:rgba(5,4,3,.88); backdrop-filter:blur(10px); }
+        .menu-art-lightbox img { display:block; max-width:min(94vw,1100px); max-height:78vh; object-fit:contain; border-radius:1rem; border:1px solid rgba(245,196,76,.65); box-shadow:0 24px 80px rgba(0,0,0,.6); }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(16, 12, 10, 0.5);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(212, 175, 55, 0.3);
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(212, 175, 55, 0.6);
+        }
+
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            #printable-receipt, #printable-receipt * {
+                visibility: visible;
+            }
+            #printable-receipt {
+                display: block !important;
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                color: #000 !important;
+                background: #fff !important;
+                padding: 15px;
+            }
+            .no-print {
+                display: none !important;
+            }
+        }
+        .customer-order-mode > header, .customer-order-mode > #public-sales-summary, .customer-order-mode > main, .customer-order-mode > #manager-pin-modal, .customer-order-mode > #admin-modal, .customer-order-mode > #audit-pin-modal, .customer-order-mode > #audit-modal, .customer-order-mode > #sheets-sync-pin-modal, .customer-order-mode > #sheets-sync-modal, .customer-order-mode > #toast-container, .customer-order-mode > #customer-qr-modal, .customer-order-mode > #incoming-mobile-orders-modal, .customer-order-mode > #mobile-order-review-modal { display:none !important; }
+        .customer-order-mode { background:#100C0A !important; }
+        /* Customer QR ordering usability: isolated to customer-order-mode. */
+        .customer-qr-header { border:1px solid rgba(212,175,55,.38); background:linear-gradient(135deg,#211711,#120d0b); box-shadow:0 10px 28px rgba(0,0,0,.26); }
+        /* Customer QR brand stack: the official logo is intentionally larger; credits are omitted from this customer header. */
+        .customer-qr-brand-stack { display:flex; flex-direction:column; align-items:center; gap:.32rem; text-align:center; }
+        /* Futuristic logo lighting: continuous halo, animated rays, energy orbits, and a moving light sweep. */
+        .customer-qr-logo-frame { position:relative; display:grid; place-items:center; width:clamp(236px,76vw,340px); max-width:100%; aspect-ratio:1; margin:clamp(.35rem,2vw,.8rem) auto; border-radius:50%; isolation:isolate; transform:translateZ(0); cursor:pointer; touch-action:manipulation; outline:none; transition:transform .42s cubic-bezier(.2,.8,.2,1),filter .42s ease; --logo-glow-x:50%; --logo-glow-y:50%; }
+        .customer-qr-logo-frame::before { content:""; position:absolute; z-index:-4; inset:-34%; border-radius:50%; background:radial-gradient(circle,rgba(255,255,229,.95) 0%,rgba(255,220,111,.74) 19%,rgba(255,174,35,.48) 39%,rgba(212,105,14,.18) 57%,transparent 74%); filter:blur(25px); opacity:.92; pointer-events:none; animation:customer-qr-logo-aura 2.6s ease-in-out infinite; will-change:transform,opacity,filter; }
+        .customer-qr-logo-frame::after { content:""; position:absolute; z-index:0; inset:-3%; border-radius:50%; pointer-events:none; background:radial-gradient(circle at var(--logo-glow-x) var(--logo-glow-y),rgba(255,255,225,.92),rgba(255,211,98,.30) 19%,transparent 52%); opacity:0; transition:opacity .22s ease; mix-blend-mode:screen; }
+        .customer-qr-logo-rays { position:absolute; z-index:-3; inset:-29%; border-radius:50%; pointer-events:none; background:repeating-conic-gradient(from 0deg,rgba(255,246,196,0) 0deg 7deg,rgba(255,220,127,.46) 7.5deg 8.2deg,rgba(255,175,45,0) 9deg 16deg); -webkit-mask:radial-gradient(circle,transparent 48%,#000 58%,#000 70%,transparent 83%); mask:radial-gradient(circle,transparent 48%,#000 58%,#000 70%,transparent 83%); filter:blur(1.2px); opacity:.64; animation:customer-qr-logo-rays 26s linear infinite; }
+        .customer-qr-logo-aura { position:absolute; z-index:-2; inset:-23%; border-radius:50%; pointer-events:none; background:radial-gradient(circle at var(--logo-glow-x) var(--logo-glow-y),rgba(255,255,238,.92),rgba(255,190,48,.52) 25%,rgba(236,122,18,.18) 48%,transparent 66%); filter:blur(21px); opacity:.82; transition:opacity .25s ease; animation:customer-qr-logo-aura 3s ease-in-out infinite reverse; will-change:transform,opacity; }
+        .customer-qr-logo { position:relative; z-index:1; display:block; width:100%; height:100%; max-width:100%; object-fit:contain; border-radius:50%; background:#fff; border:3px solid rgba(255,238,177,.98); box-shadow:0 12px 32px rgba(0,0,0,.40),0 0 24px rgba(255,219,112,.72),0 0 55px rgba(255,165,35,.48),0 0 92px rgba(255,130,17,.22); transition:filter .32s ease,box-shadow .32s ease; animation:customer-qr-logo-breathe 4.8s ease-in-out infinite; }
+        .customer-qr-logo-orbit { position:absolute; z-index:2; inset:-7%; border:2px solid transparent; border-top-color:rgba(255,255,226,1); border-right-color:rgba(255,193,55,.98); border-radius:50%; filter:drop-shadow(0 0 8px rgba(255,245,185,1)) drop-shadow(0 0 18px rgba(255,166,28,.72)); pointer-events:none; animation:customer-qr-logo-orbit 5.2s linear infinite; will-change:transform; }
+        .customer-qr-logo-orbit::after { content:""; position:absolute; width:9px; height:9px; top:8%; left:13%; border-radius:50%; background:#fffef0; box-shadow:0 0 9px 4px rgba(255,255,218,1),0 0 22px 8px rgba(255,174,34,.78),0 0 36px 13px rgba(255,130,13,.35); }
+        .customer-qr-logo-orbit-secondary { z-index:-1; inset:-16%; border-width:2px; border-style:dashed; border-top-color:rgba(255,247,198,.78); border-bottom-color:rgba(255,184,45,.72); filter:drop-shadow(0 0 7px rgba(255,191,61,.76)); animation:customer-qr-logo-orbit-reverse 11s linear infinite; will-change:transform; }
+        .customer-qr-logo-orbit-secondary::after { width:6px; height:6px; top:auto; bottom:13%; left:78%; }
+        .customer-qr-logo-pulse { position:absolute; z-index:0; inset:-8%; border:2px solid rgba(255,237,172,.86); border-radius:50%; box-shadow:0 0 16px rgba(255,208,82,.72),inset 0 0 14px rgba(255,208,82,.24); pointer-events:none; animation:customer-qr-logo-pulse 3.1s ease-out infinite; will-change:transform,opacity; }
+        .customer-qr-logo-plasma { position:absolute; z-index:3; inset:-12%; border-radius:50%; pointer-events:none; background:conic-gradient(from 0deg,transparent 0deg,rgba(255,248,202,.12) 28deg,rgba(255,255,230,.98) 46deg,rgba(255,177,40,.10) 63deg,transparent 105deg,transparent 177deg,rgba(255,204,87,.12) 210deg,rgba(255,248,202,.92) 232deg,transparent 258deg,transparent 360deg); -webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 5px),#000 calc(100% - 2px)); mask:radial-gradient(farthest-side,transparent calc(100% - 5px),#000 calc(100% - 2px)); filter:drop-shadow(0 0 8px rgba(255,232,148,.98)) drop-shadow(0 0 20px rgba(255,158,25,.72)); opacity:.92; animation:customer-qr-logo-plasma 4.6s linear infinite; }
+        .customer-qr-logo-energy-sweep { position:absolute; z-index:4; inset:-10%; border:3px solid transparent; border-top-color:rgba(255,255,235,1); border-right-color:rgba(255,201,75,.98); border-bottom-color:rgba(255,169,36,.50); border-radius:50%; filter:drop-shadow(0 0 8px rgba(255,245,183,1)) drop-shadow(0 0 18px rgba(255,167,33,.75)); pointer-events:none; animation:customer-qr-logo-energy 3.4s linear infinite; will-change:transform,filter; }
+        .customer-qr-logo-energy-sweep::after { content:""; position:absolute; width:11px; height:11px; top:8%; left:18%; border-radius:50%; background:#fffef0; box-shadow:0 0 9px 5px rgba(255,250,201,1),0 0 24px 10px rgba(255,176,38,.95),0 0 42px 16px rgba(255,130,13,.48); }
+        .customer-qr-logo-impact { position:absolute; z-index:5; inset:-5%; border:1px solid rgba(255,248,197,.95); border-radius:50%; opacity:0; pointer-events:none; box-shadow:0 0 18px rgba(255,232,143,.92),inset 0 0 16px rgba(255,207,86,.35); }
+        .customer-qr-logo-glint { position:absolute; z-index:6; inset:1.5%; overflow:hidden; border-radius:50%; pointer-events:none; background:linear-gradient(112deg,transparent 34%,rgba(255,255,255,.02) 43%,rgba(255,255,225,.78) 50%,rgba(255,193,66,.23) 55%,transparent 64%); mix-blend-mode:screen; opacity:0; transform:translateX(-135%) skewX(-13deg); animation:customer-qr-logo-glint 7.2s ease-in-out infinite; }
+        .customer-qr-logo-frame.is-energized .customer-qr-logo-pulse { animation-duration:.95s; border-color:rgba(255,255,219,1); box-shadow:0 0 28px rgba(255,241,171,1),inset 0 0 22px rgba(255,208,82,.48); }
+        .customer-qr-logo-frame.is-energized .customer-qr-logo-energy-sweep { animation-duration:1.15s; filter:drop-shadow(0 0 13px rgba(255,255,220,1)) drop-shadow(0 0 32px rgba(255,167,33,1)); }
+        .customer-qr-logo-frame.is-energized .customer-qr-logo-orbit-secondary { animation-duration:2.8s; }
+        .customer-qr-logo-frame.is-energized .customer-qr-logo-plasma { animation-duration:1.2s; opacity:1; }
+        .customer-qr-logo-frame.is-energized .customer-qr-logo-rays { animation-duration:5s; opacity:1; }
+        .customer-qr-logo-frame.is-energized .customer-qr-logo-impact { animation:customer-qr-logo-impact .9s ease-out 2; }
+        .customer-qr-logo-frame.is-energized .customer-qr-logo-glint { animation:customer-qr-logo-glint 1.2s ease-in-out 2; opacity:1; }
+        .customer-qr-logo-frame.is-interacting::after { opacity:1; }
+        .customer-qr-logo-frame.is-interacting .customer-qr-logo-aura { opacity:1; }
+        .customer-qr-logo-frame.is-interacting .customer-qr-logo { filter:brightness(1.10) saturate(1.12); box-shadow:0 12px 32px rgba(0,0,0,.40),0 0 30px rgba(255,239,157,.78),0 0 66px rgba(255,174,34,.58),0 0 110px rgba(255,130,17,.28); }
+        .customer-qr-logo-frame.is-energized { transform:scale(1.045); filter:drop-shadow(0 0 20px rgba(255,242,177,.92)) drop-shadow(0 0 42px rgba(255,158,25,.62)); }
+        .customer-qr-logo-frame.is-energized .customer-qr-logo-orbit { animation-duration:1.25s; }
+        .customer-qr-logo-frame.is-energized::before { opacity:1; filter:blur(26px); }
+        .customer-qr-logo-frame:focus-visible { outline:3px solid rgba(255,228,137,.98); outline-offset:9px; }
+        @keyframes customer-qr-logo-aura { 0%,100% { transform:scale(.86); opacity:.66; filter:blur(19px); } 50% { transform:scale(1.17); opacity:1; filter:blur(29px); } }
+        @keyframes customer-qr-logo-breathe { 0%,100% { filter:brightness(1) saturate(1); transform:scale(1); } 50% { filter:brightness(1.075) saturate(1.10); transform:scale(1.012); } }
+        @keyframes customer-qr-logo-rays { to { transform:rotate(360deg); } }
+        @keyframes customer-qr-logo-pulse { 0% { transform:scale(.93); opacity:.96; } 75%,100% { transform:scale(1.2); opacity:0; } }
+        @keyframes customer-qr-logo-energy { to { transform:rotate(360deg); } }
+        @keyframes customer-qr-logo-plasma { to { transform:rotate(360deg); } }
+        @keyframes customer-qr-logo-orbit { to { transform:rotate(360deg); } }
+        @keyframes customer-qr-logo-orbit-reverse { to { transform:rotate(-360deg); } }
+        @keyframes customer-qr-logo-glint { 0%,62% { opacity:0; transform:translateX(-135%) skewX(-13deg); } 68% { opacity:.92; } 83%,100% { opacity:0; transform:translateX(135%) skewX(-13deg); } }
+        @keyframes customer-qr-logo-impact { 0% { transform:scale(.94); opacity:.95; } 100% { transform:scale(1.23); opacity:0; } }
+        .customer-quick-checkout { position:sticky; top:max(.5rem,env(safe-area-inset-top)); z-index:100; display:flex; align-items:center; justify-content:space-between; gap:.75rem; padding:.78rem .9rem; margin-bottom:.25rem; border:1px solid rgba(242,211,110,.78); border-radius:1rem; background:rgba(22,16,13,.98); backdrop-filter:blur(14px); box-shadow:0 8px 24px rgba(0,0,0,.42),0 0 0 1px rgba(212,175,55,.16); }
+        .customer-quick-checkout button { flex-shrink:0; border-radius:.8rem; padding:.75rem 1.05rem; background:linear-gradient(135deg,#f5dc8d,#D4AF37); color:#100C0A; font-weight:900; font-size:.86rem; box-shadow:0 4px 14px rgba(212,175,55,.3); }
+        .customer-quick-checkout button:disabled { opacity:.42; box-shadow:none; }
+        #cust-categories { position:relative; scroll-behavior:smooth; scrollbar-width:none; padding-bottom:12px; }
+        #cust-categories::-webkit-scrollbar { display:none; }
+        .customer-category-tab { position:relative; z-index:1; flex:0 0 auto; border:1px solid rgba(212,175,55,.25); border-radius:999px; padding:.62rem .95rem; color:#f3eee6; background:#261e1a; font-size:.74rem; font-weight:800; white-space:nowrap; transition:background .25s ease,color .25s ease,border-color .25s ease,transform .25s ease,box-shadow .25s ease; }
+        .customer-category-tab.is-active { color:#100C0A; border-color:#f8df8a; background:linear-gradient(135deg,#fff0b8,#D4AF37); box-shadow:0 5px 18px rgba(212,175,55,.34); transform:translateY(-2px); }
+        .customer-tab-indicator { position:absolute; z-index:2; left:0; bottom:3px; height:4px; width:0; border-radius:999px; background:#ffe9a4; box-shadow:0 0 12px rgba(248,223,138,.95); pointer-events:none; transform:translateX(0); transition:transform .32s cubic-bezier(.2,.8,.2,1),width .32s cubic-bezier(.2,.8,.2,1); }
+        .customer-item-card { position:relative; border:1px solid rgba(212,175,55,.2); transition:border-color .24s ease,background .24s ease,box-shadow .24s ease,transform .24s ease; }
+        .customer-item-card.is-in-tray { border-color:rgba(245,207,91,.92); background:linear-gradient(135deg,rgba(212,175,55,.14),rgba(38,30,26,.84)); box-shadow:0 0 0 1px rgba(212,175,55,.22),0 7px 20px rgba(212,175,55,.10); }
+        .customer-item-card.is-selected { border:2px solid #f8df8a; background:linear-gradient(135deg,rgba(212,175,55,.22),rgba(38,30,26,.92)); box-shadow:0 0 0 2px rgba(248,223,138,.19),0 10px 26px rgba(212,175,55,.2); transform:translateY(-2px); animation:customer-card-selected .28s ease-out; }
+        @keyframes customer-card-selected { 0%{transform:scale(.985);filter:brightness(.9)} 65%{transform:scale(1.012);filter:brightness(1.12)} 100%{transform:scale(1);filter:brightness(1)} }
+        .customer-added-flash { animation:customer-added-pulse .42s ease-out; }
+        @keyframes customer-added-pulse { 0%{box-shadow:0 0 0 0 rgba(245,207,91,.55)} 65%{box-shadow:0 0 0 7px rgba(212,175,55,0)} 100%{box-shadow:0 0 0 0 rgba(212,175,55,0)} }
+        .customer-jingle-control { display:inline-flex; align-items:center; gap:.5rem; border:1px solid rgba(212,175,55,.42); border-radius:999px; padding:.48rem .78rem; background:rgba(16,12,10,.7); color:#f6d879; font-size:.72rem; font-weight:700; }
+        .customer-jingle-hint { min-height:1rem; color:#f4d88b; font-size:10px; }
+        @media (max-width:420px) { .customer-quick-checkout { padding:.6rem .65rem; } .customer-quick-checkout button { padding:.65rem .72rem; font-size:.75rem; } }
+        @media (prefers-reduced-motion: reduce) { .customer-category-tab,.customer-item-card,.customer-tab-indicator,.customer-qr-logo-frame,.customer-qr-logo { transition:none !important; } .customer-added-flash,.customer-item-card.is-selected { animation:none !important; } .customer-qr-logo-frame::before,.customer-qr-logo-aura { animation-duration:10s !important; } .customer-qr-logo-rays { animation-duration:48s !important; } .customer-qr-logo-pulse { animation-duration:10s !important; } .customer-qr-logo-energy-sweep,.customer-qr-logo-plasma { animation-duration:28s !important; } .customer-qr-logo-orbit { animation-duration:28s !important; } .customer-qr-logo-orbit-secondary { animation-duration:34s !important; } .customer-qr-logo-glint { animation-duration:16s !important; } .customer-qr-logo-impact { animation-duration:12s !important; } .customer-qr-logo { animation-duration:10s !important; } }
+    
+        /* Cashier navigation: keep mobile QR tools beside the live order and checkout area. */
+        .cashier-mobile-order-shortcuts { display:grid; grid-template-columns:minmax(0,.88fr) minmax(0,1.35fr); gap:.55rem; margin:0 0 .85rem; }
+        .cashier-mobile-quick-btn { min-width:0; min-height:48px; display:flex; align-items:center; justify-content:center; gap:.55rem; padding:.72rem .8rem; border-radius:.9rem; font-size:.78rem; line-height:1.15; font-weight:800; letter-spacing:.01em; transition:transform .16s ease,filter .16s ease,box-shadow .16s ease,border-color .16s ease; box-shadow:0 5px 15px rgba(0,0,0,.18); }
+        .cashier-mobile-quick-btn:hover { transform:translateY(-1px); filter:brightness(1.12); }
+        .cashier-mobile-quick-btn:focus-visible { outline:3px solid rgba(248,223,138,.95); outline-offset:2px; }
+        .cashier-mobile-quick-btn i { font-size:1rem; flex:0 0 auto; }
+        .cashier-mobile-quick-btn span { min-width:0; }
+        .cashier-mobile-qr-btn { color:#f7df9a; background:linear-gradient(135deg,rgba(93,48,20,.96),rgba(46,27,18,.98)); border:1px solid rgba(212,175,55,.58); }
+        .cashier-incoming-orders-btn { color:#fff2ca; background:linear-gradient(110deg,rgba(80,43,18,.98),rgba(66,35,22,.98) 42%,rgba(54,38,83,.98)); border:1px solid rgba(248,205,91,.8); box-shadow:0 0 0 1px rgba(212,175,55,.15),0 7px 18px rgba(0,0,0,.24),0 0 16px rgba(212,175,55,.12); }
+        .cashier-incoming-orders-btn i { color:#f5cf66; }
+        #mobile-orders-badge:not(.hidden) { display:inline-flex; align-items:center; justify-content:center; box-shadow:0 0 0 2px rgba(255,255,255,.14),0 0 14px rgba(244,63,94,.55); animation:cashier-order-badge-pulse 1.7s ease-in-out infinite; }
+        @keyframes cashier-order-badge-pulse { 0%,100% { transform:scale(1); } 50% { transform:scale(1.12); } }
+        @media (max-width:420px) { .cashier-mobile-order-shortcuts { grid-template-columns:1fr 1.25fr; gap:.4rem; } .cashier-mobile-quick-btn { padding:.65rem .48rem; gap:.38rem; font-size:.69rem; } .cashier-mobile-quick-btn i { font-size:.9rem; } }
+        @media (prefers-reduced-motion: reduce) { .cashier-mobile-quick-btn { transition:none; } #mobile-orders-badge:not(.hidden) { animation:none; } }
+</style>
+    <meta name="robots" content="noindex,nofollow">
+</head>
+<body class="bg-mocha-900 text-gray-100 font-sans min-h-screen flex flex-col antialiased selection:bg-gold-500 selection:text-mocha-900">
+  <div id="customer-order-app" class="min-h-screen bg-mocha-900 text-gray-100 p-3 sm:p-5"></div>
+  <script>
+
+        const customerQuery = new URLSearchParams(window.location.search);
+        const rawStation = customerQuery.get('station') || 'Counter';
+        const stationFromLink = rawStation.replace(/[<>"'&]/g, '').slice(0, 60) || 'Counter';
+        let customerOrderCart = [];
+        let customerMenuCatalog = [];
+        function escapeHtml(value) {
+            return String(value ?? '').replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+        }
+let customerJingleAudio = null;
+        let customerTapAudioContext = null;
+        function initCustomerJingle() {
+            customerJingleAudio = document.getElementById('cust-jingle');
+            if (!customerJingleAudio) return;
+            customerJingleAudio.volume = 0.55;
+            customerJingleAudio.addEventListener('playing', () => {
+                const button = document.getElementById('cust-jingle-toggle');
+                if (button) button.innerHTML = '<i class="fa-solid fa-pause"></i> Pause jingle';
+                const hint = document.getElementById('cust-audio-hint');
+                if (hint) hint.textContent = '39ers Delights jingle is playing.';
+            });
+            customerJingleAudio.addEventListener('pause', () => {
+                const button = document.getElementById('cust-jingle-toggle');
+                if (button) button.innerHTML = '<i class="fa-solid fa-volume-high"></i> Play jingle';
+            });
+            customerJingleAudio.addEventListener('error', () => {
+                const hint = document.getElementById('cust-audio-hint');
+                if (hint) hint.textContent = 'Music could not load. Please check your phone connection.';
+            });
+            // Try immediately. If the phone blocks autoplay, the first customer touch
+            // anywhere in the QR menu starts the music (without an extra menu step).
+            const app = document.getElementById('customer-order-app');
+            const unlockOnFirstTouch = (event) => {
+                // The Play/Pause button manages the track itself; do not toggle it twice.
+                if (event?.target?.closest?.('#cust-jingle-toggle')) return;
+                if (customerJingleAudio && customerJingleAudio.paused) {
+                    const started = customerJingleAudio.play();
+                    if (started && typeof started.catch === 'function') started.catch(() => {
+                        const hint = document.getElementById('cust-audio-hint');
+                        if (hint) hint.textContent = 'Your phone blocked automatic playback. Tap Play jingle to listen.';
+                    });
+                }
+            };
+            if (app) {
+                // Pointer events cover current mobile browsers; touchstart is a compatibility fallback.
+                app.addEventListener('pointerdown', unlockOnFirstTouch, { once: true, capture: true });
+                app.addEventListener('touchstart', unlockOnFirstTouch, { once: true, capture: true, passive: true });
+            }
+            const attempt = customerJingleAudio.play();
+            if (attempt && typeof attempt.catch === 'function') attempt.catch(() => {
+                const hint = document.getElementById('cust-audio-hint');
+                if (hint) hint.textContent = 'Tap anywhere in the menu to start the jingle. You can also use Play jingle.';
+            });
+        }
+        function toggleCustomerJingle() {
+            if (!customerJingleAudio) customerJingleAudio = document.getElementById('cust-jingle');
+            if (!customerJingleAudio) return;
+            if (customerJingleAudio.paused) {
+                const attempt = customerJingleAudio.play();
+                if (attempt && typeof attempt.catch === 'function') attempt.catch(() => {
+                    const hint = document.getElementById('cust-audio-hint');
+                    if (hint) hint.textContent = 'Playback is blocked by your phone. Check silent mode and media volume.';
+                });
+            } else customerJingleAudio.pause();
+        }
+        async function playCustomerTapSound() {
+            try {
+                const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                if (!AudioContextClass) return;
+                if (!customerTapAudioContext) customerTapAudioContext = new AudioContextClass();
+                if (customerTapAudioContext.state !== 'running') await customerTapAudioContext.resume();
+                const now = customerTapAudioContext.currentTime;
+                const playTone = (frequency, offset, duration, peak) => {
+                    const oscillator = customerTapAudioContext.createOscillator();
+                    const gain = customerTapAudioContext.createGain();
+                    oscillator.type = 'sine';
+                    oscillator.frequency.setValueAtTime(frequency, now + offset);
+                    gain.gain.setValueAtTime(0.0001, now + offset);
+                    gain.gain.exponentialRampToValueAtTime(peak, now + offset + 0.008);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, now + offset + duration);
+                    oscillator.connect(gain); gain.connect(customerTapAudioContext.destination);
+                    oscillator.start(now + offset); oscillator.stop(now + offset + duration + 0.01);
+                };
+                // Two clearer tones for category and item selection.
+                playTone(880, 0, 0.075, 0.11);
+                playTone(1174, 0.07, 0.085, 0.085);
+            } catch (_) { /* Sound is optional; ordering must always work. */ }
+        }
+        function launchCustomerOrdering() {
+            document.body.classList.add('customer-order-mode');
+            const app = document.getElementById('customer-order-app');
+            app.classList.remove('hidden');
+            app.innerHTML = `<div class="max-w-xl mx-auto space-y-4 pb-8">
+                <div class="customer-quick-checkout"><div class="min-w-0"><p class="text-[10px] uppercase tracking-wider text-gray-300">Your tray</p><p class="font-bold text-gold-300"><span id="cust-top-count">0 items</span> · <span id="cust-top-total">₱0.00</span></p></div><button id="cust-top-submit" type="button" onclick="submitCustomerMobileOrder()" disabled><i class="fa-solid fa-bag-shopping mr-1"></i> Checkout</button></div>
+                <header class="customer-qr-header rounded-2xl p-4">
+                    <div class="customer-qr-brand-stack">
+                        <div class="customer-qr-logo-frame" data-customer-logo-glow role="button" tabindex="0" aria-pressed="false" aria-label="Tap to activate the 39ers Delights energy glow">
+                            <span class="customer-qr-logo-rays" aria-hidden="true"></span>
+                            <span class="customer-qr-logo-aura" aria-hidden="true"></span>
+                            <span class="customer-qr-logo-pulse" aria-hidden="true"></span>
+                            <span class="customer-qr-logo-orbit" aria-hidden="true"></span>
+                            <span class="customer-qr-logo-orbit customer-qr-logo-orbit-secondary" aria-hidden="true"></span>
+                            <span class="customer-qr-logo-plasma" aria-hidden="true"></span>
+                            <span class="customer-qr-logo-energy-sweep" aria-hidden="true"></span>
+                            <span class="customer-qr-logo-impact" aria-hidden="true"></span>
+                            <img src="/assets/39ers-delights-logo.png" alt="39ers Delights official logo" class="customer-qr-logo" width="520" height="520" decoding="async">
+                            <span class="customer-qr-logo-glint" aria-hidden="true"></span>
+                        </div>
+                    </div>
+                    <div class="customer-qr-order-intro mt-4 text-center">
+                        <h1 class="text-2xl font-bold">Order from your phone</h1>
+                        <p class="text-xs text-gray-400 mt-1">${escapeHtml(stationFromLink)} · Choose your drinks and food below.</p>
+                    </div>
+                    <div class="mt-3 flex items-center justify-center gap-2"><button id="cust-jingle-toggle" type="button" onclick="toggleCustomerJingle();playCustomerTapSound()" class="customer-jingle-control"><i class="fa-solid fa-volume-high"></i> Play jingle</button><span class="text-[10px] text-gray-400">Store music</span></div>
+                    <p id="cust-audio-hint" class="customer-jingle-hint mt-1 text-center" aria-live="polite">If your phone blocks autoplay, tap anywhere once to start the jingle.</p>
+                    <audio id="cust-jingle" autoplay preload="auto" playsinline src="/assets/39ers-delights-jingle.mp3"></audio>
+                </header>
+                <div class="flex gap-2"><button id="cust-dine" onclick="setCustomerOrderMode('Dine-In')" aria-pressed="true" class="flex-1 rounded-xl p-3 bg-gold-500 text-mocha-900 text-sm font-bold transition-all">Dine-In</button><button id="cust-takeout" onclick="setCustomerOrderMode('Takeout')" aria-pressed="false" class="flex-1 rounded-xl p-3 bg-mocha-700 text-gray-200 text-sm font-bold transition-all">Takeout</button></div>
+                <input id="cust-search" oninput="renderCustomerMenu()" placeholder="Search menu…" aria-label="Search menu" class="w-full glass-input p-3 rounded-xl text-sm">
+                <div id="cust-categories" class="flex gap-2 overflow-x-auto pb-2 pt-1" role="group" aria-label="Menu categories"></div>
+                <p id="cust-menu-connection" class="hidden rounded-xl border border-amber-500/30 bg-amber-950/25 p-3 text-xs text-amber-200" role="status" aria-live="polite"></p>
+                <div id="cust-menu" class="space-y-3"><p class="text-xs text-gray-400">Loading menu…</p></div>
+                <section class="rounded-2xl border border-gold-500/30 bg-mocha-800 p-4 space-y-3" id="cust-tray-section"><h2 class="font-bold">Review your tray <span id="cust-tray-count" class="text-gold-400">(0)</span></h2><div id="cust-tray" class="space-y-2 text-sm"></div><label class="block text-xs text-gray-300">Special notes (e.g., 50% sugar, extra pearls)</label><textarea id="cust-notes" rows="2" class="w-full glass-input p-3 rounded-xl text-sm" placeholder="Add order notes…"></textarea><p class="text-right text-lg font-bold text-gold-300" id="cust-total">₱0.00</p><div id="cust-payment-options" class="space-y-2" aria-live="polite"></div><button id="cust-submit" onclick="submitCustomerMobileOrder()" class="w-full rounded-xl bg-gold-500 text-mocha-900 p-3 font-bold disabled:opacity-50" disabled>Submit Order</button><p id="cust-status" class="text-xs text-gray-400" aria-live="polite"></p></section>
+            </div>`;
+            initCustomerLogoGlow();
+            initCustomerJingle();
+            loadCustomerMenu();
+        }
+        function initCustomerLogoGlow() {
+            const frame = document.querySelector('[data-customer-logo-glow]');
+            if (!frame || frame.dataset.glowEventsReady === 'true') return;
+            frame.dataset.glowEventsReady = 'true';
+            let relaxTimer = null;
+            const setGlowFocus = event => {
+                const bounds = frame.getBoundingClientRect();
+                if (!bounds.width || !bounds.height) return;
+                const x = Math.max(0, Math.min(100, ((event.clientX - bounds.left) / bounds.width) * 100));
+                const y = Math.max(0, Math.min(100, ((event.clientY - bounds.top) / bounds.height) * 100));
+                frame.style.setProperty('--logo-glow-x', `${x}%`);
+                frame.style.setProperty('--logo-glow-y', `${y}%`);
+                frame.classList.add('is-interacting');
+            };
+            const energize = event => {
+                if (event && Number.isFinite(event.clientX) && Number.isFinite(event.clientY)) setGlowFocus(event);
+                frame.classList.remove('is-energized');
+                void frame.offsetWidth; // restart the impact and light-sweep animations on every deliberate tap
+                frame.classList.add('is-energized', 'is-interacting');
+                frame.setAttribute('aria-pressed', 'true');
+                if (relaxTimer) window.clearTimeout(relaxTimer);
+            };
+            const relax = () => {
+                if (relaxTimer) window.clearTimeout(relaxTimer);
+                relaxTimer = window.setTimeout(() => {
+                    frame.classList.remove('is-energized', 'is-interacting');
+                    frame.setAttribute('aria-pressed', 'false');
+                    frame.style.setProperty('--logo-glow-x', '50%');
+                    frame.style.setProperty('--logo-glow-y', '50%');
+                }, 2400);
+            };
+            frame.addEventListener('pointermove', event => {
+                if (event.pointerType === 'mouse' || event.pointerType === 'pen') setGlowFocus(event);
+                else if (frame.classList.contains('is-energized')) setGlowFocus(event);
+            }, { passive: true });
+            frame.addEventListener('pointerdown', energize, { passive: true });
+            frame.addEventListener('pointerup', relax, { passive: true });
+            frame.addEventListener('pointercancel', relax, { passive: true });
+            frame.addEventListener('click', event => { energize(event); relax(); }, { passive: true });
+            frame.addEventListener('pointerleave', event => { if (event.pointerType !== 'touch') relax(); }, { passive: true });
+            frame.addEventListener('focus', () => frame.classList.add('is-interacting'), true);
+            frame.addEventListener('blur', relax, true);
+            frame.addEventListener('keydown', event => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    energize();
+                    relax();
+                }
+            });
+        }
+        let customerCategory = 'ALL';
+        let customerSelectedItemId = null;
+        let customerOrderMode = 'Dine-In';
+        // The previous mobile order behavior remains the default until the customer selects GCash QR.
+        let customerPaymentMethod = 'CASH';
+        let customerGcashProof = null;
+        let customerMenuRefreshTimer = null;
+        const CUSTOMER_MENU_CACHE_KEY = '39ers_customer_menu_cache_v1';
+        function readCustomerMenuCache() {
+            try {
+                const cached = JSON.parse(localStorage.getItem(CUSTOMER_MENU_CACHE_KEY) || 'null');
+                return Array.isArray(cached) && cached.length ? cached : [];
+            } catch (_) { return []; }
+        }
+        function saveCustomerMenuCache(menu) {
+            try { localStorage.setItem(CUSTOMER_MENU_CACHE_KEY, JSON.stringify(menu)); } catch (_) { /* storage may be unavailable */ }
+        }
+        function showCustomerMenuConnectionNotice(message = '') {
+            const notice = document.getElementById('cust-menu-connection');
+            if (!notice) return;
+            notice.textContent = message;
+            notice.classList.toggle('hidden', !message);
+        }
+        async function requestCustomerMenu(retries = 3) {
+            let lastError;
+            for (let attempt = 0; attempt < retries; attempt++) {
+                let response;
+                try {
+                    response = await fetch('/api/mobile-menu', { cache: 'no-store' });
+                } catch (error) {
+                    lastError = error;
+                    if (attempt === retries - 1) throw error;
+                    await new Promise(resolve => setTimeout(resolve, 350 * (attempt + 1)));
+                    continue;
+                }
+                const data = await response.json().catch(() => ({}));
+                if (response.ok && data.ok && Array.isArray(data.menu)) return data;
+                const error = new Error(data.message || `Menu service returned HTTP ${response.status}`);
+                error.diagnostic = data.diagnostic || {};
+                error.incidentId = data.incidentId || response.headers.get('X-Menu-Incident-Id') || '';
+                if (![502, 503, 504].includes(response.status) || attempt === retries - 1) throw error;
+                lastError = error;
+                await new Promise(resolve => setTimeout(resolve, 350 * (attempt + 1)));
+            }
+            throw lastError || new Error('Menu service is temporarily unavailable.');
+        }
+        function startCustomerMenuRefresh() {
+            if (customerMenuRefreshTimer) clearInterval(customerMenuRefreshTimer);
+            // Recheck less aggressively; checkout always performs a fresh server-side check.
+            customerMenuRefreshTimer = setInterval(() => {
+                if (customerMenuCatalog.length) refreshCustomerMenuAvailability();
+                else loadCustomerMenu();
+            }, 60000);
+        }
+        async function loadCustomerMenu() {
+            const menuElement = document.getElementById('cust-menu');
+            try {
+                const data = await requestCustomerMenu(3);
+                customerMenuCatalog = data.menu;
+                if (!customerMenuCatalog.length) throw new Error('The store menu has not been published yet. Please ask the cashier to open the POS and publish the menu.');
+                saveCustomerMenuCache(customerMenuCatalog);
+                showCustomerMenuConnectionNotice('');
+                customerCategory = 'ALL';
+                renderCustomerCategoryTabs();
+                renderCustomerMenu();
+                renderCustomerTray();
+                startCustomerMenuRefresh();
+            } catch (error) {
+                const cachedMenu = readCustomerMenuCache();
+                if (cachedMenu.length) {
+                    customerMenuCatalog = cachedMenu;
+                    renderCustomerCategoryTabs();
+                    renderCustomerMenu();
+                    renderCustomerTray();
+                    showCustomerMenuConnectionNotice('Connection interrupted. Showing the last loaded menu while we reconnect. Availability will be checked again before you submit.');
+                    startCustomerMenuRefresh();
+                } else if (menuElement) {
+                    const diagnostic = error.diagnostic?.stage ? ` Diagnostic: ${error.diagnostic.stage}.` : '';
+                    const incident = error.incidentId ? ` Incident ID: ${error.incidentId}.` : '';
+                    menuElement.innerHTML = `<div class="rounded-xl border border-rose-500/30 bg-rose-950/30 p-3"><p class="text-rose-200 text-sm">Could not connect to the menu service: ${escapeHtml(error.message)}.${escapeHtml(diagnostic)}${escapeHtml(incident)}</p><button type="button" onclick="loadCustomerMenu()" class="mt-3 rounded-lg bg-gold-500 px-4 py-2 text-sm font-bold text-mocha-900">Try again</button></div>`;
+                    startCustomerMenuRefresh();
+                }
+            }
+        }
+        function renderCustomerCategoryTabs() {
+            const host = document.getElementById('cust-categories');
+            if (!host) return;
+            const categories = ['ALL', ...new Set(customerMenuCatalog.map(item => item.category).filter(Boolean))];
+            if (!categories.includes(customerCategory)) customerCategory = 'ALL';
+            const categoriesKey = JSON.stringify(categories);
+            // Keep the tab DOM alive so the gold indicator glides instead of restarting.
+            if (host.dataset.categoryList !== categoriesKey) {
+                host.innerHTML = categories.map(category => `<button type="button" data-category="${escapeHtml(category)}" aria-pressed="false" class="customer-category-tab" onclick="selectCustomerCategory(this.dataset.category)">${escapeHtml(category === 'ALL' ? 'ALL ITEMS' : category)}</button>`).join('') + '<span class="customer-tab-indicator" aria-hidden="true"></span>';
+                host.dataset.categoryList = categoriesKey;
+            }
+            host.querySelectorAll('.customer-category-tab').forEach(button => {
+                const active = button.dataset.category === customerCategory;
+                button.classList.toggle('is-active', active);
+                button.setAttribute('aria-pressed', String(active));
+            });
+            moveCustomerCategoryIndicator();
+        }
+        function moveCustomerCategoryIndicator() {
+            const host = document.getElementById('cust-categories');
+            if (!host) return;
+            const active = host.querySelector('.customer-category-tab.is-active');
+            const indicator = host.querySelector('.customer-tab-indicator');
+            if (!active || !indicator) return;
+            indicator.style.width = `${active.offsetWidth}px`;
+            indicator.style.transform = `translateX(${active.offsetLeft}px)`;
+            const left = active.offsetLeft;
+            const right = left + active.offsetWidth;
+            if (left < host.scrollLeft) host.scrollTo({ left: Math.max(0, left - 12), behavior: 'smooth' });
+            else if (right > host.scrollLeft + host.clientWidth) host.scrollTo({ left: right - host.clientWidth + 12, behavior: 'smooth' });
+        }
+        function selectCustomerCategory(category) {
+            playCustomerTapSound();
+            customerCategory = category;
+            renderCustomerCategoryTabs();
+            renderCustomerMenu();
+        }
+        async function refreshCustomerMenuAvailability() {
+            try {
+                const data = await requestCustomerMenu(2);
+                if (!Array.isArray(data.menu) || !data.menu.length) throw new Error('The published menu is currently empty.');
+                customerMenuCatalog = data.menu;
+                saveCustomerMenuCache(customerMenuCatalog);
+                showCustomerMenuConnectionNotice('');
+                renderCustomerCategoryTabs();
+                renderCustomerMenu();
+                renderCustomerTray();
+                return true;
+            } catch (error) {
+                console.warn('Customer menu availability refresh failed; keeping the last successful menu:', error);
+                if (customerMenuCatalog.length) {
+                    showCustomerMenuConnectionNotice('Connection interrupted. Your menu is still displayed. We will retry automatically. Current availability will be checked again before you submit.');
+                }
+                return false;
+            }
+        }
+        function isCustomerItemSoldOut(item) {
+            return Boolean(item?.isSoldOut || item?.manualSoldOut || (item?.stockTracked === true && Number(item?.stockQuantity) <= 0));
+        }
+        function getCustomerItemRemaining(item) {
+            if (!item || isCustomerItemSoldOut(item)) return 0;
+            if (item.stockTracked !== true) return Infinity;
+            const quantity = Number(item.stockQuantity);
+            const inTray = customerOrderCart.filter(line => String(line.itemId) === String(item.itemId)).reduce((sum, line) => sum + Number(line.qty || 0), 0);
+            return Math.max(0, (Number.isFinite(quantity) ? quantity : 0) - inTray);
+        }
+        function renderCustomerMenu() {
+            const menu = document.getElementById('cust-menu');
+            if (!menu) return;
+            const search = (document.getElementById('cust-search')?.value || '').toLowerCase();
+            const filtered = customerMenuCatalog.filter(i =>
+                (customerCategory === 'ALL' || i.category === customerCategory) &&
+                String(i.itemName || '').toLowerCase().includes(search)
+            );
+            menu.innerHTML = filtered.map(item => {
+                const soldOut = isCustomerItemSoldOut(item);
+                const remaining = getCustomerItemRemaining(item);
+                const inTrayQty = customerOrderCart.filter(line => String(line.itemId) === String(item.itemId)).reduce((sum, line) => sum + Number(line.qty || 0), 0);
+                const stockLabel = soldOut ? '<span class="rounded-full bg-rose-500/15 border border-rose-400/40 px-2 py-0.5 text-[9px] font-extrabold text-rose-300">SOLD OUT</span>'
+                    : (item.stockTracked === true ? `<span class="text-[10px] text-amber-300">Available to add: ${Math.max(0, remaining)}</span>` : '');
+                const trayLabel = inTrayQty ? `<span class="rounded-full bg-gold-500/15 border border-gold-400/40 px-2 py-0.5 text-[9px] font-extrabold text-gold-200">IN YOUR TRAY × ${inTrayQty}</span>` : '';
+                return `<article data-item-id="${escapeHtml(item.itemId)}" class="customer-item-card ${String(customerSelectedItemId) === String(item.itemId) ? 'is-selected' : ''} ${inTrayQty ? 'is-in-tray customer-added-flash' : ''} rounded-xl ${soldOut ? 'border-rose-400/40' : ''} bg-mocha-800/70 p-3"><div class="flex items-start justify-between gap-2 mb-2"><div class="font-bold">${escapeHtml(item.itemName)} <span class="block text-[10px] text-gray-400 font-normal">${escapeHtml(item.category)}</span></div><div class="flex flex-col items-end gap-1">${stockLabel}${trayLabel}</div></div><div class="grid grid-cols-2 gap-2">${(item.variants || []).map((v, vi) => `<button ${soldOut || remaining <= 0 ? 'disabled aria-disabled="true"' : ''} onclick="addCustomerTrayItem('${escapeHtml(item.itemId)}',${vi})" class="text-left rounded-lg ${soldOut || remaining <= 0 ? 'bg-mocha-900/60 border border-rose-400/20 text-gray-500 cursor-not-allowed opacity-70' : 'bg-mocha-900 border border-gold-500/20'} p-2 text-xs"><span>${escapeHtml(v.name)}</span><strong class="block ${soldOut || remaining <= 0 ? 'text-gray-500' : 'text-gold-300'}">₱${Number(v.price).toFixed(2)}</strong></button>`).join('')}</div></article>`;
+            }).join('') || '<p class="text-xs text-gray-400">No items match your search.</p>';
+        }
+
+        function setCustomerOrderMode(mode) {
+            playCustomerTapSound();
+            customerOrderMode = mode;
+            document.getElementById('cust-takeout').className = `flex-1 rounded-xl p-3 ${mode === 'Takeout' ? 'bg-gold-500 text-mocha-900 shadow-lg' : 'bg-mocha-700 text-gray-200'} text-sm font-bold transition-all`;
+            document.getElementById('cust-dine').className = `flex-1 rounded-xl p-3 ${mode === 'Dine-In' ? 'bg-gold-500 text-mocha-900 shadow-lg' : 'bg-mocha-700 text-gray-200'} text-sm font-bold transition-all`;
+            document.getElementById('cust-dine').setAttribute('aria-pressed', String(mode === 'Dine-In'));
+            document.getElementById('cust-takeout').setAttribute('aria-pressed', String(mode === 'Takeout'));
+        }
+        function addCustomerTrayItem(itemId, variantIndex) {
+            playCustomerTapSound();
+            const item = customerMenuCatalog.find(i => String(i.itemId) === String(itemId));
+            const variant = item?.variants?.[variantIndex];
+            if (!item || !variant) return;
+            customerSelectedItemId = item.itemId;
+            if (isCustomerItemSoldOut(item)) {
+                document.getElementById('cust-status').textContent = `${item.itemName} is SOLD OUT. Please choose another item.`;
+                return;
+            }
+            if (getCustomerItemRemaining(item) <= 0) {
+                document.getElementById('cust-status').textContent = `Only ${Number(item.stockQuantity) || 0} unit(s) of ${item.itemName} are available.`;
+                return;
+            }
+            const existing = customerOrderCart.find(i => i.itemId === item.itemId && i.variantName === variant.name);
+            if (existing) existing.qty++;
+            else customerOrderCart.push({ itemId: item.itemId, itemName: item.itemName, category: item.category, variantName: variant.name, price: Number(variant.price), qty: 1 });
+            renderCustomerMenu();
+            renderCustomerTray();
+        }
+        function renderCustomerTray() {
+            const tray = document.getElementById('cust-tray');
+            if (!tray) return;
+            tray.innerHTML = customerOrderCart.map((i, n) => {
+                const item = customerMenuCatalog.find(entry => String(entry.itemId) === String(i.itemId));
+                const unavailable = !item || isCustomerItemSoldOut(item);
+                return `<div class="flex items-center justify-between gap-2 border-b border-white/10 pb-2"><div><p>${escapeHtml(i.itemName)} <span class="text-gray-400">(${escapeHtml(i.variantName)})</span></p><p class="text-xs text-gold-300">₱${Number(i.price).toFixed(2)} × ${i.qty}</p>${unavailable ? '<p class="text-[10px] font-bold text-rose-300">SOLD OUT — remove this item</p>' : ''}</div><div class="flex gap-2"><button onclick="changeCustomerTrayQty(${n},-1)" class="px-2 rounded bg-mocha-700">−</button><button onclick="changeCustomerTrayQty(${n},1)" class="px-2 rounded bg-mocha-700">+</button></div></div>`;
+            }).join('') || '<p class="text-xs text-gray-400">Your tray is empty.</p>';
+            const itemCount = customerOrderCart.reduce((n, i) => n + i.qty, 0);
+            const total = customerOrderCart.reduce((n, i) => n + i.price * i.qty, 0);
+            document.getElementById('cust-tray-count').textContent = `(${itemCount})`;
+            document.getElementById('cust-total').textContent = '₱' + total.toFixed(2);
+            const topCount = document.getElementById('cust-top-count');
+            const topTotal = document.getElementById('cust-top-total');
+            const topButton = document.getElementById('cust-top-submit');
+            const bottomButton = document.getElementById('cust-submit');
+            if (topCount) topCount.textContent = `${itemCount} ${itemCount === 1 ? 'item' : 'items'}`;
+            if (topTotal) topTotal.textContent = '₱' + total.toFixed(2);
+            const paymentReady = customerPaymentMethod !== 'GCASH_QR' || !!customerGcashProof;
+            if (topButton) topButton.disabled = itemCount === 0 || !paymentReady;
+            if (bottomButton) bottomButton.disabled = itemCount === 0 || !paymentReady;
+            renderCustomerPaymentOptions(total);
+        }
+        function setCustomerPaymentMethod(method) {
+            customerPaymentMethod = method === 'GCASH_QR' ? 'GCASH_QR' : 'CASH';
+            if (customerPaymentMethod !== 'GCASH_QR') customerGcashProof = null;
+            renderCustomerTray();
+        }
+        async function handleCustomerGcashProofSelection(file) {
+            const status = document.getElementById('cust-gcash-proof-status');
+            if (!file) return;
+            if (!file.type || !/^image\/(jpeg|png|webp)$/i.test(file.type)) {
+                customerGcashProof = null;
+                if (status) status.textContent = 'Please select a JPG, PNG or WebP screenshot.';
+                renderCustomerTray();
+                return;
+            }
+            if (file.size > 12 * 1024 * 1024) {
+                customerGcashProof = null;
+                if (status) status.textContent = 'This image is too large. Please choose a screenshot under 12 MB.';
+                renderCustomerTray();
+                return;
+            }
+            if (status) status.textContent = 'Preparing your screenshot securely…';
+            try {
+                const sourceUrl = await new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = () => resolve(String(reader.result || ''));
+                    reader.onerror = () => reject(new Error('Could not read the selected image.'));
+                    reader.readAsDataURL(file);
+                });
+                const image = await new Promise((resolve, reject) => {
+                    const img = new Image();
+                    img.onload = () => resolve(img);
+                    img.onerror = () => reject(new Error('The selected file is not a readable image.'));
+                    img.src = sourceUrl;
+                });
+                const maxSide = 1280;
+                const scale = Math.min(1, maxSide / Math.max(image.naturalWidth || image.width, image.naturalHeight || image.height));
+                const canvas = document.createElement('canvas');
+                canvas.width = Math.max(1, Math.round((image.naturalWidth || image.width) * scale));
+                canvas.height = Math.max(1, Math.round((image.naturalHeight || image.height) * scale));
+                const ctx = canvas.getContext('2d');
+                if (!ctx) throw new Error('Your browser could not prepare the screenshot.');
+                ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+                let dataUrl = canvas.toDataURL('image/jpeg', 0.82);
+                if (dataUrl.length > 1_200_000) dataUrl = canvas.toDataURL('image/jpeg', 0.68);
+                if (dataUrl.length > 1_200_000) throw new Error('Screenshot is still too large after compression. Please crop it or choose a smaller screenshot.');
+                customerGcashProof = { dataUrl, fileName: (file.name || 'GCash-payment-proof').replace(/[^a-zA-Z0-9._-]/g, '_').slice(0, 80) + '.jpg' };
+                renderCustomerTray();
+                const proofStatus = document.getElementById('cust-gcash-proof-status');
+                if (proofStatus) proofStatus.textContent = 'Screenshot attached and ready to send with your order.';
+            } catch (error) {
+                customerGcashProof = null;
+                renderCustomerTray();
+                const proofStatus = document.getElementById('cust-gcash-proof-status');
+                if (proofStatus) proofStatus.textContent = error.message || 'Could not prepare screenshot.';
+            }
+        }
+        function clearCustomerGcashProof() { customerGcashProof = null; renderCustomerTray(); }
+        function downloadCustomerGcashQr() {
+            const link = document.createElement('a');
+            link.href = '/assets/39ers-delights-gcash-qr.png';
+            link.download = '39ers-Delights-GCash-QR.png';
+            link.rel = 'noopener';
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+        }
+        function renderCustomerPaymentOptions(total) {
+            const host = document.getElementById('cust-payment-options');
+            if (!host) return;
+            const gcashSelected = customerPaymentMethod === 'GCASH_QR';
+            const cashClass = gcashSelected
+                ? 'border-white/10 bg-mocha-900 text-gray-300'
+                : 'border-gold-400 bg-gold-500/15 text-gold-200 ring-1 ring-gold-400/40';
+            const gcashClass = gcashSelected
+                ? 'border-gold-400 bg-gold-500/15 text-gold-200 ring-1 ring-gold-400/40'
+                : 'border-white/10 bg-mocha-900 text-gray-300';
+            host.innerHTML = `<div class="rounded-xl border border-gold-500/20 bg-mocha-900/70 p-3 space-y-3">
+                <div><p class="text-xs font-bold text-gray-100">Payment option</p><p class="text-[10px] text-gray-400 mt-1">Choose how you plan to pay for this order.</p></div>
+                <div class="grid grid-cols-2 gap-2" role="group" aria-label="Choose payment method">
+                    <button type="button" onclick="setCustomerPaymentMethod('CASH')" aria-pressed="${!gcashSelected}" class="rounded-xl border p-3 text-xs font-bold ${cashClass}"><i class="fa-solid fa-money-bill-wave mr-1"></i> Pay at counter</button>
+                    <button type="button" onclick="setCustomerPaymentMethod('GCASH_QR')" aria-pressed="${gcashSelected}" class="rounded-xl border p-3 text-xs font-bold ${gcashClass}"><i class="fa-solid fa-qrcode mr-1"></i> GCash QR</button>
+                </div>
+                ${gcashSelected ? `<div class="rounded-xl border border-blue-400/30 bg-blue-950/30 p-3 space-y-3">
+                    <div class="text-center"><p class="font-extrabold text-blue-200">GCash · InstaPay QR</p><p class="text-[10px] text-gray-300 mt-1">39ers Delights payment QR</p></div>
+                    <div class="mx-auto w-full max-w-[280px] rounded-xl bg-white p-2 shadow-xl"><img src="/assets/39ers-delights-gcash-qr.png" alt="39ers Delights GCash InstaPay QR code" class="block w-full h-auto" width="515" height="506" decoding="async"></div>
+                    <p class="text-center text-sm font-extrabold text-gold-200">Order amount: ₱${Number(total || 0).toFixed(2)}</p>
+                    <button type="button" onclick="downloadCustomerGcashQr()" class="w-full rounded-lg bg-blue-600 hover:bg-blue-500 p-3 text-xs font-bold text-white"><i class="fa-solid fa-download mr-1"></i> Save GCash QR to this phone</button>
+                    <p class="text-[11px] leading-relaxed text-gray-300">Using this same phone? Save the QR image, open GCash, tap <strong>QR</strong>, choose the scan/upload option, then select the saved image from your gallery. You can also scan this QR with another phone.</p>
+                    <p class="text-[11px] leading-relaxed text-amber-200">Enter the exact order amount if GCash asks. Check the recipient carefully. After paying, attach your GCash transaction screenshot below. The cashier will compare it with the payment received in the merchant account.</p>
+                    <div class="rounded-xl border border-blue-300/25 bg-mocha-900/80 p-3 space-y-2">
+                      <p class="block text-xs font-bold text-blue-100"><i class="fa-solid fa-cloud-arrow-up mr-1"></i> Attach GCash payment proof <span class="text-rose-300">*</span></p>
+                      <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <button type="button" onclick="document.getElementById('cust-gcash-proof-gallery').click()" class="w-full rounded-lg border border-blue-300/40 bg-blue-600 hover:bg-blue-500 p-3 text-xs font-bold text-white"><i class="fa-regular fa-images mr-1"></i> Choose screenshot from gallery</button>
+                        <button type="button" onclick="document.getElementById('cust-gcash-proof-camera').click()" class="w-full rounded-lg border border-emerald-300/30 bg-emerald-700 hover:bg-emerald-600 p-3 text-xs font-bold text-white"><i class="fa-solid fa-camera mr-1"></i> Take a photo</button>
+                      </div>
+                      <input id="cust-gcash-proof-gallery" type="file" accept="image/jpeg,image/png,image/webp" onchange="handleCustomerGcashProofSelection(this.files && this.files[0])" class="sr-only" tabindex="-1" aria-hidden="true">
+                      <input id="cust-gcash-proof-camera" type="file" accept="image/jpeg,image/png,image/webp" capture="environment" onchange="handleCustomerGcashProofSelection(this.files && this.files[0])" class="sr-only" tabindex="-1" aria-hidden="true">
+                      <p class="text-[10px] text-gray-400">Choose an existing screenshot or image from your phone's gallery, or use your camera to take a photo of the transaction.</p>
+                      <p id="cust-gcash-proof-status" class="text-[11px] text-gray-300" aria-live="polite">Attach a screenshot of the successful GCash transaction to enable order submission.</p>
+                      ${customerGcashProof ? `<div class="flex items-center gap-2"><span class="text-[11px] text-emerald-300"><i class="fa-solid fa-circle-check mr-1"></i>Screenshot attached</span><button type="button" onclick="clearCustomerGcashProof()" class="text-[11px] text-rose-300 underline">Remove</button></div><img src="${customerGcashProof.dataUrl}" alt="Preview of attached GCash payment screenshot" class="block max-h-48 max-w-full mx-auto rounded-lg border border-white/10 object-contain">` : ''}
+                      <p class="text-[10px] leading-relaxed text-gray-400">The screenshot is stored privately with this order and shown only to the POS cashier. Please hide unrelated personal information before uploading.</p>
+                    </div>
+                </div>` : ''}
+            </div>`;
+        }
+        function changeCustomerTrayQty(index, delta) {
+            playCustomerTapSound();
+            if (!customerOrderCart[index]) return;
+            const line = customerOrderCart[index];
+            if (delta > 0) {
+                const item = customerMenuCatalog.find(entry => String(entry.itemId) === String(line.itemId));
+                if (!item || isCustomerItemSoldOut(item) || getCustomerItemRemaining(item) <= 0) {
+                    document.getElementById('cust-status').textContent = `${line.itemName} is no longer available in that quantity.`;
+                    return;
+                }
+            }
+            line.qty += delta;
+            if (line.qty <= 0) customerOrderCart.splice(index, 1);
+            renderCustomerMenu();
+            renderCustomerTray();
+        }
+
+        async function submitCustomerMobileOrder() {
+            if (!customerOrderCart.length) { document.getElementById('cust-status').textContent = 'Please add at least one item.'; return; }
+            if (customerPaymentMethod === 'GCASH_QR' && !customerGcashProof) { document.getElementById('cust-status').textContent = 'Please attach your successful GCash payment screenshot before submitting this order.'; return; }
+            const button = document.getElementById('cust-submit');
+            const topButton = document.getElementById('cust-top-submit');
+            const status = document.getElementById('cust-status');
+            if (button?.disabled) return;
+            if (button) { button.disabled = true; button.textContent = 'Submitting…'; }
+            if (topButton) { topButton.disabled = true; topButton.textContent = 'Submitting…'; }
+            const token = 'MO-' + Date.now().toString(36).toUpperCase() + '-' + Math.random().toString(36).slice(2, 6).toUpperCase();
+            const code = String(Math.floor(1000 + Math.random() * 9000));
+            const order = {
+                token, code, station: stationFromLink, orderMode: customerOrderMode,
+                paymentMethod: customerPaymentMethod,
+                paymentProof: customerPaymentMethod === 'GCASH_QR' && customerGcashProof ? { dataUrl: customerGcashProof.dataUrl, fileName: customerGcashProof.fileName } : null,
+                notes: document.getElementById('cust-notes').value.trim(),
+                createdAt: new Date().toISOString(),
+                dateTime: new Date().toLocaleString('en-PH', { timeZone: 'Asia/Manila', dateStyle: 'medium', timeStyle: 'short' }),
+                items: customerOrderCart.map(i => ({ ...i }))
+            };
+            status.textContent = 'Checking latest availability…';
+            try {
+                let availabilityData;
+                try {
+                    availabilityData = await requestCustomerMenu(3);
+                } catch (_) {
+                    throw new Error('The menu service is temporarily unavailable. Your order has not been submitted. Please try again shortly.');
+                }
+                if (!Array.isArray(availabilityData.menu) || !availabilityData.menu.length) {
+                    throw new Error('Could not verify current stock. Your order has not been submitted. Please refresh the menu and try again.');
+                }
+                customerMenuCatalog = availabilityData.menu;
+                const requiredByItem = new Map();
+                for (const line of customerOrderCart) {
+                    requiredByItem.set(String(line.itemId), (requiredByItem.get(String(line.itemId)) || 0) + Number(line.qty || 0));
+                }
+                for (const [itemId, required] of requiredByItem) {
+                    const currentItem = customerMenuCatalog.find(entry => String(entry.itemId) === itemId);
+                    if (!currentItem || isCustomerItemSoldOut(currentItem)) throw new Error(`${currentItem?.itemName || 'An item'} has just been marked SOLD OUT. Please remove it from your tray.`);
+                    if (currentItem.stockTracked === true && required > Number(currentItem.stockQuantity)) {
+                        throw new Error(`Only ${Math.max(0, Number(currentItem.stockQuantity) || 0)} unit(s) of ${currentItem.itemName} remain. Please adjust your tray.`);
+                    }
+                    for (const line of customerOrderCart.filter(entry => String(entry.itemId) === itemId)) {
+                        const liveVariant = (currentItem.variants || []).find(entry => String(entry.name) === String(line.variantName));
+                        if (!liveVariant) throw new Error(`${currentItem.itemName} no longer has the selected price option. Please refresh your tray.`);
+                        line.price = Number(liveVariant.price);
+                        line.itemName = currentItem.itemName;
+                        line.category = currentItem.category;
+                    }
+                }
+                renderCustomerMenu();
+                renderCustomerTray();
+                status.textContent = 'Submitting your order…';
+                order.items = customerOrderCart.map(i => ({ ...i }));
+                const response = await fetch('/api/mobile-orders', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(order)
+                });
+                const result = await response.json().catch(() => ({}));
+                if (!response.ok || !result.ok) throw new Error(result.message || `Order service returned HTTP ${response.status}`);
+                const total = Number(result.order?.total ?? result.total ?? customerOrderCart.reduce((n, i) => n + i.price * i.qty, 0));
+                const selectedPaymentMethod = order.paymentMethod === 'GCASH_QR' ? 'GCASH_QR' : 'CASH';
+                if (customerMenuRefreshTimer) clearInterval(customerMenuRefreshTimer);
+                customerMenuRefreshTimer = null;
+                customerOrderCart = [];
+                document.getElementById('customer-order-app').innerHTML = `<div class="max-w-md mx-auto text-center space-y-4 pt-8 pb-10"><div class="mx-auto w-16 h-16 rounded-full bg-emerald-400/10 text-emerald-300 flex items-center justify-center text-3xl"><i class="fa-solid fa-check"></i></div><h1 class="text-2xl font-bold">Order Submitted</h1><p class="text-sm text-gray-300">Your order has been sent to the cashier for review.</p><div class="rounded-2xl border border-gold-500/30 bg-mocha-800 p-5"><p class="text-xs text-gray-400">YOUR ORDER CODE</p><p class="text-4xl font-bold text-gold-300 tracking-widest">${escapeHtml(code)}</p><p class="text-xs text-gray-400 mt-2">${escapeHtml(stationFromLink)}</p><div id="customer-order-token-qr" class="mx-auto bg-white p-2 rounded-lg w-fit mt-4"></div><p class="text-lg font-bold mt-3">₱${total.toFixed(2)}</p><p class="text-xs text-gray-300 mt-2">Payment option: <strong class="text-gold-200">${selectedPaymentMethod === 'GCASH_QR' ? 'GCash QR' : 'Pay at counter'}</strong></p></div>${selectedPaymentMethod === 'GCASH_QR' ? `<section class="rounded-2xl border border-blue-400/30 bg-blue-950/30 p-4 space-y-3"><div><h2 class="font-extrabold text-blue-200">Pay with GCash QR</h2><p class="text-xs text-gray-300 mt-1">39ers Delights · InstaPay QR</p></div><div class="mx-auto w-full max-w-[280px] rounded-xl bg-white p-2"><img src="/assets/39ers-delights-gcash-qr.png" alt="39ers Delights GCash InstaPay QR code" class="block w-full h-auto" width="515" height="506" decoding="async"></div><p class="text-lg font-extrabold text-gold-200">Amount: ₱${total.toFixed(2)}</p><button type="button" onclick="downloadCustomerGcashQr()" class="w-full rounded-lg bg-blue-600 hover:bg-blue-500 p-3 text-xs font-bold text-white"><i class="fa-solid fa-download mr-1"></i> Save GCash QR to this phone</button><p class="text-left text-[11px] leading-relaxed text-gray-300">On this same phone: save the QR, open GCash, tap <strong>QR</strong>, choose the scan/upload option, and select the saved image from your gallery. Or scan this screen using another phone.</p><p class="text-left text-[11px] leading-relaxed text-amber-200">Your payment screenshot is attached to this order. Check the recipient and amount; the cashier will verify the transfer in the GCash merchant account before processing the order.</p></section>` : ''}<p class="text-xs text-amber-300">${selectedPaymentMethod === 'GCASH_QR' ? 'Your GCash payment screenshot was attached to this order. The cashier must verify the transfer in the GCash merchant account; uploading a screenshot alone does not confirm payment.' : 'Wait for cashier review and confirmation before paying at the counter.'}</p><button onclick="location.reload()" class="w-full rounded-xl bg-gold-500 text-mocha-900 p-3 font-bold">Start another order</button></div>`;
+                if (window.QRCode) new QRCode(document.getElementById('customer-order-token-qr'), { text: JSON.stringify({ token, code }), width: 180, height: 180 });
+            } catch (error) {
+                status.textContent = `Could not submit order: ${error.message}. Please try again or show your tray to the cashier.`;
+                if (button) { button.disabled = false; button.textContent = 'Submit Order'; }
+                if (topButton) { topButton.disabled = customerOrderCart.length === 0; topButton.innerHTML = '<i class="fa-solid fa-bag-shopping mr-1"></i> Checkout'; }
+            }
+        }
+
+        
+        document.addEventListener('DOMContentLoaded', () => launchCustomerOrdering());
+  </script>
+</body>
+</html>

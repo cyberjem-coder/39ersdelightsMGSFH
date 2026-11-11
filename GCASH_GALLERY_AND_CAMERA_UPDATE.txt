@@ -1,0 +1,18 @@
+39ERS DELIGHTS — GCASH PAYMENT PROOF: GALLERY + CAMERA CHOICES
+
+ADDITIVE / COMPATIBILITY UPDATE
+This update changes only the customer-side GCash proof attachment controls in public/index.html. It does not alter the cashier review, payment verification, Netlify Blobs storage, Google Apps Script, Google Sheets, POS checkout, inventory, or other existing workflows.
+
+CUSTOMER OPTIONS
+- Choose screenshot from gallery: opens the phone's image/file picker. This input intentionally has no capture attribute, so customers can select an existing GCash transaction screenshot from Photos/Gallery/Files.
+- Take a photo: opens the phone camera where supported. This input uses capture="environment" to request the rear-facing camera.
+- Both choices use the existing handleCustomerGcashProofSelection() image validation/compression/preview flow and attach the selected image to the same GCash paymentProof property on the order.
+
+INSTALLATION
+Replace only public/index.html in the existing GitHub repository with the public/index.html from this patch, preserving its exact folder path. Commit the file and allow Netlify to redeploy. Do not replace the whole repository and do not clear Netlify Blobs or browser storage.
+
+NOTES
+- The gallery option can open the system photo picker or file picker depending on Android/iOS/browser. It does not force camera capture.
+- The Take a photo option requests camera capture; exact behavior is controlled by the phone/browser.
+- The existing proof handler accepts JPEG, PNG and WebP images up to 12 MB before browser compression. Unsupported formats continue to show the existing validation message.
+- A selected screenshot remains pending verification until cashier checks the actual GCash merchant account. A screenshot alone is not confirmation of payment.

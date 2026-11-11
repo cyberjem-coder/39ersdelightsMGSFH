@@ -1,4 +1,5 @@
 import { createRequestStore, verifyStoreKey, json } from "../../lib/store.mjs";
+import { verifyPosSession } from "../../lib/pos-security.mjs";
 
 const orderKey = token => `order-${token}`;
 const proofKey = token => `payment-proof-${token}`;
@@ -73,7 +74,7 @@ export default async function handler(request) {
   if (request.method === "GET") {
     const proofToken = url.searchParams.get("proof");
     if (proofToken) {
-      if (!/^MO-[A-Z0-9-]{6,40}$/.test(proofToken) || !(await verifyStoreKey(request, store))) {
+      if (!/^MO-[A-Z0-9-]{6,40}$/.test(proofToken) || !(await verifyPosSession(request, store)) || !(await verifyStoreKey(request, store))) {
         return json({ ok: false, message: "POS device not authorized." }, 403);
       }
       const proof = await store.get(proofKey(proofToken), { type: "json" });
@@ -88,6 +89,7 @@ export default async function handler(request) {
       return json({ ok: true, order: { token: order.token, code: order.code, status: order.status, paymentMethod: order.paymentMethod, paymentProof: proofSummary(order.paymentProof) } });
     }
 
+    if (!(await verifyPosSession(request, store))) return json({ ok: false, message: "Cashier POS is locked or the session expired. Unlock the POS and try again." }, 401);
     if (!(await verifyStoreKey(request, store))) return json({ ok: false, message: "POS device not authorized." }, 403);
     const status = (url.searchParams.get("status") || "PENDING").toUpperCase();
     if (!["PENDING", "CONFIRMED", "REJECTED"].includes(status)) {
@@ -204,6 +206,7 @@ export default async function handler(request) {
   }
 
   if (request.method === "PATCH") {
+    if (!(await verifyPosSession(request, store))) return json({ ok: false, message: "Cashier POS is locked or the session expired. Unlock the POS and try again." }, 401);
     if (!(await verifyStoreKey(request, store))) return json({ ok: false, message: "POS device not authorized." }, 403);
     let body;
     try { body = await request.json(); }

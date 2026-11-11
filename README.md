@@ -164,3 +164,8 @@ After cashier verification, the existing connected Google Apps Script saves a pr
 **Required one-time update:** The deployed Google Apps Script must also be updated using `docs/39ers_delights_google_sheets_sync.gs`, then `setupPosSheets` must be run once to authorize Drive and create the private folder/sheet. Edit the existing web app deployment and deploy a new version while keeping the same `/exec` URL. Follow `GCASH_PAYMENT_PROOF_SETUP.txt`. The Netlify project must be redeployed after replacing `public/index.html` and `netlify/functions/mobile-orders.mjs`.
 
 The script does not make the Drive images public. Access is controlled by the connected Google account's Drive permissions. This feature is not a GCash API/payment gateway and cannot verify settlement automatically.
+
+
+## POS Security & Customer Route Isolation
+
+See `POS_SECURITY_SETUP.txt` for the one-time Netlify setup. The main cashier POS requires the server-side POS access PIN, supports manual and automatic locking, and allows authorized users to change the POS access PIN from Manager's Tab. Customer QR codes now open the separate `public/order.html` customer-only ordering page.

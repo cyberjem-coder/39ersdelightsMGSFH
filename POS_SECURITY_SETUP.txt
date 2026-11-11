@@ -1,0 +1,41 @@
+39ERS DELIGHTS — POS SECURITY UPDATE
+====================================
+
+WHAT THIS UPDATE ADDS
+- Server-side PIN authentication for opening the cashier POS.
+- Manual Lock POS button in the main POS toolbar.
+- Automatic lock after 5 minutes without activity.
+- Automatic lock when the browser page becomes hidden or is being closed/navigated away from.
+- Change POS Access PIN in Manager's Tab (separate from the existing Manager PIN and Audit PIN).
+- Server-side session checks for cashier-only mobile-menu publishing, Incoming Mobile Orders access, payment-proof retrieval, and cashier order actions.
+- A separate public/order.html page containing only the customer mobile ordering UI and mobile ordering code. The QR generator now points to /order.html.
+- Legacy ?customerOrder=1 links redirect to /order.html.
+
+IMPORTANT BROWSER LIMITATION
+Browsers do not expose a reliable event that says the physical monitor has been powered off. This update locks when the page is hidden, during page navigation/close, or after 5 minutes of inactivity. These events cover common screen-lock and sleep cases, but a device/OS that turns off its display while leaving the page visible may not notify the browser. Lock POS manually before leaving the station.
+
+ONE-TIME NETLIFY SETUP
+1. In Netlify, open the 39ers Delights site.
+2. Open Site configuration (or Project configuration) > Environment variables.
+3. Add a variable named POS_SECURITY_SETUP_KEY.
+4. Set its value to the private 48-character setup key provided separately in the ChatGPT installation instructions. Do NOT commit the key into GitHub or put it in a public file.
+5. Save the variable and redeploy the site so the new function can read it.
+6. Deploy all files in the security patch. The added function is netlify/functions/pos-auth.mjs; the shared helper is lib/pos-security.mjs. The updated mobile-menu and mobile-orders functions must also be deployed.
+7. Open the normal cashier POS root URL. The one-time owner setup screen will appear. Enter the setup key, create a 4–12 digit POS PIN, and confirm it.
+8. After POS security is initialized, you may remove POS_SECURITY_SETUP_KEY from Netlify environment variables and redeploy. The PIN hash and session signing secret are stored in Netlify Blobs; the setup key is no longer needed for normal login or PIN changes.
+9. Test Lock POS, unlock, 5-minute inactivity (or temporarily wait for it), and Change POS Access PIN.
+10. Print/share updated customer QR codes only after deploying; the link should open /order.html?station=... rather than the main POS.
+
+PIN SECURITY
+- The PIN is never stored in the browser or saved in plaintext. The server stores a salted PBKDF2-SHA256 hash.
+- The server issues an HttpOnly, Secure, SameSite=Strict session cookie.
+- After 5 incorrect PIN attempts from the same client network address, login is temporarily blocked for 5 minutes.
+- Changing the PIN invalidates earlier POS sessions.
+- Existing Manager PIN and Audit PIN features remain separate and unchanged.
+
+CUSTOMER ROUTE ISOLATION
+- Public QR orders use /order.html. That page contains only customer ordering UI, mobile menu retrieval, public order submission, payment choice, GCash QR, and payment-proof upload. It does not contain the cashier POS markup or Manager/Audit/Sheets administration functions.
+- Public endpoints still intentionally allow GET /api/mobile-menu and POST /api/mobile-orders for customer ordering. Customer order status lookup by token remains public. Cashier menu publishing, Incoming Mobile Orders listing, payment-proof access, and order actions require the server POS session plus the existing POS device key.
+
+IMPORTANT SCOPE NOTE
+This is a PIN gate and cashier API session layer for the existing browser-based POS. It is not a full multi-user role system and does not encrypt locally stored sales/menu data in the browser profile. Restrict access to the cashier computer and its browser profile.
