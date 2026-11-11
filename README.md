@@ -146,3 +146,8 @@ The Netlify Blobs store is now created inside each Functions v2 request handler 
 ## Optional Azure AI Speech voice
 
 This project includes `netlify/functions/azure-voice.mjs`. The POS uses `/api/azure-voice` by default when no custom AI voice endpoint has been saved. Configure `AZURE_SPEECH_KEY` and `AZURE_SPEECH_REGION` in Netlify Environment variables, then redeploy. Full setup instructions are in `AZURE_SPEECH_SETUP.txt`. Existing browser SpeechSynthesis remains the fallback.
+
+
+## Additive computer voice selector
+
+The cashier POS now includes a **Voice Settings** control. It lists voices exposed by the current computer/browser, supports previewing a selection, and saves the chosen voice on that POS device. Selecting a specific computer voice makes POS announcements use it directly without calling the online AI voice endpoint first. The default **Automatic** selection preserves the prior online-AI-first behavior and browser fallback. This feature requires no Azure subscription, payment card, API key, or additional npm dependency when using a computer voice. Voice availability depends on the OS and browser. See `VOICE_SELECTOR_UPDATE_NOTES.txt`.

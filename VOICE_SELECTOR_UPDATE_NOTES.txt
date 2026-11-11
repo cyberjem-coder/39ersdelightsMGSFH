@@ -1,0 +1,44 @@
+39ERS DELIGHTS POS — ADDITIVE COMPUTER VOICE SELECTOR
+====================================================
+
+WHAT WAS ADDED
+--------------
+- Added a Voice Settings button to the cashier POS header.
+- Added a Voice Settings panel that lists voices exposed by the current browser / operating system.
+- Added an Automatic option, a Preview Selected Voice button, and a Refresh List button.
+- Added a saved voice choice using this POS device's local browser storage.
+- Added explicit computer-voice priority: when a cashier selects a computer voice, POS announcements use that selected browser voice instead of trying the online AI endpoint first.
+- Automatic remains the default and preserves the prior online-AI-first behavior with the existing browser voice fallback.
+- The existing Filipino + English (Taglish) / English language selector remains in place.
+
+HOW TO USE AFTER DEPLOYMENT
+---------------------------
+1. Open the cashier POS in the same browser and computer used for checkout.
+2. Click Voice Settings in the top POS controls.
+3. Open Announcement voice and choose a listed voice.
+4. Click Preview Selected Voice to hear it.
+5. Close Voice Settings. Future POS announcements on that device use the chosen computer voice.
+6. Choose Automatic at any time to restore the previous online-AI-first behavior and automatic browser fallback.
+
+IMPORTANT NOTES
+---------------
+- This feature does not require Azure, an API key, a payment card, or a new npm dependency when using a computer voice.
+- The list contains voices the browser exposes. Available names, languages, and voice quality depend on the computer, operating system, browser, and installed voice packages.
+- A Filipino voice may not be available on every Windows computer. In that case, choose the clearest available English voice for Taglish announcements, or add a Filipino voice in Windows language / speech settings if one is offered for the installed Windows version.
+- The selected voice is saved separately on each POS device/browser. It does not sync automatically between cashier computers.
+- Browser speech may require the cashier to interact with the page first. The existing Sound & Voice ON/OFF control still governs POS audio.
+
+FEATURE PRESERVATION
+--------------------
+- Only public/index.html was modified for the feature; all pre-existing project files are retained unchanged.
+- A new documentation file was added.
+- Existing sales, checkout, inventory, VAT, discounts, promotions, receipts, reports, Manager's Tab, Audit Trail, Google Sheets sync, mobile QR ordering, incoming mobile orders, Blobs storage, logo, jingle, and reset-device functions were not intentionally modified.
+- Existing Azure endpoint and browser fallback code remain present.
+- No new dependencies were added.
+
+DEPLOYMENT CAUTION
+------------------
+- Keep a backup of the currently deployed project before updating.
+- Upload this ZIP's contents to a preview branch first, preserving all paths.
+- Do not delete or reset Netlify Blobs data, environment variables, device authorization, or Google Sheets configuration.
+- Test the voice selector and normal cashier workflows on the preview deployment before promoting it.

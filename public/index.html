@@ -276,6 +276,7 @@
 
                 <button id="audio-assistant-toggle" onclick="toggleAudioAssistant()" title="Turn click sounds and friendly voice announcements on/off" class="px-3.5 py-2 rounded-xl bg-emerald-900/50 hover:bg-emerald-800 border border-emerald-400/30 text-emerald-300 hover:text-white transition flex items-center gap-2 text-xs font-semibold shadow-sm"><i id="audio-assistant-icon" class="fa-solid fa-volume-high"></i><span id="audio-assistant-label">Sound & Voice: ON</span></button>
                 <label class="flex items-center gap-2 px-2 py-1 rounded-xl bg-mocha-800 border border-gold-500/20 text-xs text-gray-300" title="Choose the voice language"><span>Voice</span><select id="pos-voice-language" onchange="setPosVoiceLanguage(this.value)" class="bg-mocha-900 text-gold-300 rounded-md px-2 py-1 outline-none"><option value="fil-PH">Filipino + English (Taglish)</option><option value="en-PH">English</option></select></label>
+                <button onclick="openPosVoiceSettings()" title="Choose and preview a voice installed on this computer" class="px-3 py-2 rounded-xl bg-mocha-800 hover:bg-mocha-700 border border-gold-400/30 text-gold-200 hover:text-white transition flex items-center gap-2 text-xs font-semibold shadow-sm"><i class="fa-solid fa-sliders"></i><span>Voice Settings</span></button>
                 <button onclick="configureAiVoiceEndpoint()" title="Configure online AI voice service" class="px-3 py-2 rounded-xl bg-violet-900/50 hover:bg-violet-800 border border-violet-400/30 text-violet-200 hover:text-white transition flex items-center gap-2 text-xs font-semibold shadow-sm"><i class="fa-solid fa-wand-magic-sparkles"></i><span>AI Voice Setup</span></button>
                 <button onclick="testAiVoice()" title="Test the built-in Azure female Filipino-English voice" class="px-3 py-2 rounded-xl bg-amber-900/50 hover:bg-amber-800 border border-amber-400/30 text-amber-200 hover:text-white transition flex items-center gap-2 text-xs font-semibold shadow-sm"><i class="fa-solid fa-microphone"></i><span>Test AI Voice</span></button>
                 
@@ -897,6 +898,28 @@
       </div>
     </div>
     <div id="mobile-order-review-modal" class="fixed inset-0 z-[77] bg-black/90 backdrop-blur-md flex items-center justify-center p-4 hidden"><div class="glass-panel w-full max-w-lg rounded-2xl border border-indigo-400/30 p-5 space-y-4"><div class="flex items-center justify-between"><h3 class="font-bold text-indigo-300">Review Mobile Order</h3><button onclick="closeMobileOrderReview()" class="w-8 h-8 rounded-lg bg-mocha-700"><i class="fa-solid fa-xmark"></i></button></div><div id="mobile-order-review-details" class="text-sm text-gray-200"></div><p class="text-xs text-gray-400">Confirming imports the items into the active POS cart only. It does not record a sale or deduct stock. Existing promo, discount, VAT, payment, stock deduction, and receipt workflows remain in control of the cashier.</p><div class="flex gap-2"><button onclick="closeMobileOrderReview()" class="flex-1 py-2.5 rounded-xl bg-mocha-700 text-gray-200 text-xs font-semibold">Back</button><button onclick="confirmMobileOrderImport()" class="flex-1 py-2.5 rounded-xl bg-indigo-400 text-mocha-900 text-xs font-bold">Review & Confirm Import</button></div></div></div>
+    <!-- Additive POS voice selector: uses voices exposed by this computer/browser. -->
+    <div id="pos-voice-settings-modal" class="fixed inset-0 z-[110] bg-black/85 backdrop-blur-md flex items-center justify-center p-4 hidden" role="dialog" aria-modal="true" aria-labelledby="pos-voice-settings-title">
+      <div class="glass-panel w-full max-w-lg rounded-2xl border border-amber-400/35 shadow-2xl overflow-hidden">
+        <div class="p-4 border-b border-amber-400/20 flex items-center justify-between">
+          <div><h3 id="pos-voice-settings-title" class="font-bold text-amber-300"><i class="fa-solid fa-microphone-lines mr-2"></i>Voice Settings</h3><p class="text-[11px] text-gray-400 mt-1">Choose a voice available on this POS computer</p></div>
+          <button onclick="closePosVoiceSettings()" aria-label="Close voice settings" class="w-9 h-9 rounded-lg bg-mocha-700 text-gray-300 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="p-5 space-y-4">
+          <label for="pos-voice-choice" class="block text-xs font-semibold text-gray-300">Announcement voice</label>
+          <select id="pos-voice-choice" onchange="setPosVoiceSelection(this.value)" class="w-full glass-input bg-mocha-900 text-gold-200 px-3 py-3 rounded-xl text-sm" aria-describedby="pos-voice-choice-help">
+            <option value="">Automatic (online AI first, then best available computer voice)</option>
+          </select>
+          <p id="pos-voice-choice-help" class="text-xs text-gray-400">The list comes from voices installed or made available by Windows and your browser. Filipino voices may not be installed on every computer.</p>
+          <div class="flex flex-wrap gap-2">
+            <button onclick="previewPosVoice()" class="flex-1 min-w-[140px] py-2.5 rounded-xl bg-amber-400 text-mocha-950 text-xs font-bold hover:bg-amber-300"><i class="fa-solid fa-play mr-1"></i>Preview Selected Voice</button>
+            <button onclick="refreshPosVoiceChoices()" class="px-4 py-2.5 rounded-xl bg-mocha-700 border border-gold-500/20 text-gold-200 text-xs font-semibold"><i class="fa-solid fa-rotate mr-1"></i>Refresh List</button>
+          </div>
+          <p id="pos-voice-settings-status" class="text-xs text-gray-400" aria-live="polite">Your choice is saved on this POS computer.</p>
+          <div class="rounded-xl border border-gold-500/15 bg-mocha-900/70 p-3 text-[11px] leading-relaxed text-gray-400"><strong class="text-gold-300">Note:</strong> Choosing a computer voice uses the browser's built-in speech service and does not need an Azure key or payment card. Choose Automatic to keep the existing online AI voice attempt and browser fallback.</div>
+        </div>
+      </div>
+    </div>
     <div id="customer-order-app" class="hidden min-h-screen bg-mocha-900 text-gray-100 p-3 sm:p-5"></div>
 
     <!-- UI TOAST NOTIFICATION CONTAINER -->
@@ -1096,6 +1119,9 @@
             localStorage.setItem(aiVoiceEndpointStorageKey, aiVoiceEndpoint);
         }
         let posVoiceLanguage = localStorage.getItem('pos_voice_language_v1') === 'en-PH' ? 'en-PH' : 'fil-PH';
+        // Empty selection preserves the original automatic online-AI/browser voice behavior.
+        const posVoiceSelectionStorageKey = 'pos_voice_selection_uri_v1';
+        let posSelectedVoiceId = localStorage.getItem(posVoiceSelectionStorageKey) || '';
         let activeAiAudio = null;
         let aiVoiceRequestToken = 0;
         let audioContext = null;
@@ -1126,6 +1152,7 @@
             updateAudioAssistantButton();
             const voiceLanguageSelect = document.getElementById('pos-voice-language');
             if (voiceLanguageSelect) voiceLanguageSelect.value = posVoiceLanguage;
+            populatePosVoiceChoices();
             // Click sounds are delegated so newly rendered POS controls are covered too.
             document.addEventListener('click', event => {
                 if (!audioAssistantEnabled) return;
@@ -1189,10 +1216,110 @@
             showToast(`Voice language set to ${posVoiceLanguage === 'en-PH' ? 'English' : 'Filipino + English (Taglish)'}.`, 'success');
             if (audioAssistantEnabled) speakPosMessage(posVoiceLanguage === 'en-PH' ? 'English voice selected. Voice announcements will now speak in English.' : 'Napili ang Filipino-English Taglish voice. From now on, mixed Filipino and English ang voice announcements natin.');
         }
+        function getPosVoiceId(voice) {
+            return voice?.voiceURI || `${voice?.name || ''}::${voice?.lang || ''}`;
+        }
+        function getExplicitPosVoice() {
+            if (!posSelectedVoiceId || !('speechSynthesis' in window)) return null;
+            const voices = window.speechSynthesis.getVoices() || [];
+            return voices.find(voice => getPosVoiceId(voice) === posSelectedVoiceId) || null;
+        }
+        function populatePosVoiceChoices() {
+            const select = document.getElementById('pos-voice-choice');
+            const status = document.getElementById('pos-voice-settings-status');
+            if (!select) return;
+            const voices = ('speechSynthesis' in window) ? (window.speechSynthesis.getVoices() || []) : [];
+            const savedId = posSelectedVoiceId;
+            select.replaceChildren();
+            const automatic = document.createElement('option');
+            automatic.value = '';
+            automatic.textContent = 'Automatic (online AI first, then best available computer voice)';
+            select.appendChild(automatic);
+            if (!('speechSynthesis' in window)) {
+                const unavailable = document.createElement('option');
+                unavailable.disabled = true;
+                unavailable.textContent = 'Speech voices are not supported by this browser';
+                select.appendChild(unavailable);
+                select.value = '';
+                if (status) status.textContent = 'This browser does not provide built-in speech voices.';
+                return;
+            }
+            if (!voices.length) {
+                const loading = document.createElement('option');
+                loading.disabled = true;
+                loading.textContent = 'No voices loaded yet — choose Refresh List';
+                select.appendChild(loading);
+                select.value = '';
+                if (status) status.textContent = 'The browser has not loaded its voice list yet. Try Refresh List.';
+                return;
+            }
+            const availableIds = new Set(voices.map(getPosVoiceId));
+            if (savedId && !availableIds.has(savedId)) {
+                posSelectedVoiceId = '';
+                localStorage.removeItem(posVoiceSelectionStorageKey);
+            }
+            voices.slice().sort((a, b) => `${a.lang || ''} ${a.name || ''}`.localeCompare(`${b.lang || ''} ${b.name || ''}`)).forEach(voice => {
+                const option = document.createElement('option');
+                option.value = getPosVoiceId(voice);
+                option.textContent = `${voice.name || 'Unnamed voice'} — ${voice.lang || 'Language not specified'}${voice.default ? ' (system default)' : ''}`;
+                select.appendChild(option);
+            });
+            select.value = posSelectedVoiceId || '';
+            if (status) status.textContent = `${voices.length} voice${voices.length === 1 ? '' : 's'} available on this computer. Your selection is saved on this POS device.`;
+        }
+        function openPosVoiceSettings() {
+            populatePosVoiceChoices();
+            const modal = document.getElementById('pos-voice-settings-modal');
+            if (modal) modal.classList.remove('hidden');
+            refreshPosVoiceChoices();
+        }
+        function closePosVoiceSettings() {
+            document.getElementById('pos-voice-settings-modal')?.classList.add('hidden');
+        }
+        function refreshPosVoiceChoices() {
+            if (!('speechSynthesis' in window)) { populatePosVoiceChoices(); return; }
+            try { window.speechSynthesis.getVoices(); } catch (_) { /* Browser voice enumeration is optional. */ }
+            populatePosVoiceChoices();
+            window.setTimeout(populatePosVoiceChoices, 250);
+        }
+        function setPosVoiceSelection(value) {
+            posSelectedVoiceId = String(value || '');
+            if (posSelectedVoiceId) localStorage.setItem(posVoiceSelectionStorageKey, posSelectedVoiceId);
+            else localStorage.removeItem(posVoiceSelectionStorageKey);
+            posPreferredVoice = choosePosVoice();
+            aiVoiceRequestToken++;
+            if (activeAiAudio) { activeAiAudio.pause(); activeAiAudio.src = ''; activeAiAudio = null; }
+            if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+            const selected = getExplicitPosVoice();
+            const status = document.getElementById('pos-voice-settings-status');
+            if (status) status.textContent = selected ? `Selected: ${selected.name} (${selected.lang || 'language not specified'}). This computer voice will be used for POS announcements.` : 'Automatic mode selected. The existing online AI voice and browser fallback will be used.';
+            showToast(selected ? `POS voice changed to ${selected.name}.` : 'Automatic voice selection restored.', 'success');
+        }
+        function previewPosVoice() {
+            if (!audioAssistantEnabled) {
+                showToast('Turn Sound & Voice ON before previewing a voice.', 'warning');
+                return;
+            }
+            if (!('speechSynthesis' in window)) {
+                showToast('This browser does not support built-in speech voices.', 'error');
+                return;
+            }
+            const voice = getExplicitPosVoice() || choosePosVoice();
+            if (!voice) {
+                showToast('No computer voice is available yet. Try Refresh List or check Windows speech settings.', 'warning');
+                return;
+            }
+            const message = posVoiceLanguage === 'en-PH'
+                ? 'Hello! This is a preview of the selected 39ers Delights POS voice. Thank you for choosing 39ers Delights.'
+                : 'Kumusta po! Ito ang preview ng napiling boses para sa 39ers Delights. Maraming salamat po!';
+            speakPosMessage(message, { forceBrowser: true });
+        }
         function choosePosVoice() {
             if (!('speechSynthesis' in window)) return null;
             const voices = window.speechSynthesis.getVoices() || [];
             if (!voices.length) return null;
+            const explicitVoice = getExplicitPosVoice();
+            if (explicitVoice) return explicitVoice;
             const tagalog = voices.filter(v => /^(fil|tl)([-_]|$)/i.test(v.lang || '') || /filipino|tagalog/i.test(v.name || ''));
             const english = voices.filter(v => /^en([_-]|$)/i.test(v.lang || ''));
             const pool = posVoiceLanguage === 'en-PH' ? (english.length ? english : voices) : (tagalog.length ? tagalog : english.length ? english : voices);
@@ -1212,7 +1339,10 @@
         }
         if ('speechSynthesis' in window) {
             posPreferredVoice = choosePosVoice();
-            window.speechSynthesis.addEventListener?.('voiceschanged', () => { posPreferredVoice = choosePosVoice(); });
+            window.speechSynthesis.addEventListener?.('voiceschanged', () => {
+                posPreferredVoice = choosePosVoice();
+                populatePosVoiceChoices();
+            });
         }
         function configureAiVoiceEndpoint() {
             const current = aiVoiceEndpoint || '';
@@ -1300,20 +1430,24 @@
             if (activeAiAudio) { activeAiAudio.pause(); activeAiAudio = null; }
             if ('speechSynthesis' in window) window.speechSynthesis.cancel();
             (async () => {
-                const onlinePlayed = options.forceBrowser ? false : await tryOnlineAiVoice(message, options, token);
+                // An explicitly selected computer voice takes priority over online AI speech.
+                // Automatic mode retains the existing online-AI-first behavior.
+                const useComputerVoice = options.forceBrowser || Boolean(posSelectedVoiceId);
+                const onlinePlayed = useComputerVoice ? false : await tryOnlineAiVoice(message, options, token);
                 if (onlinePlayed || token !== aiVoiceRequestToken || !audioAssistantEnabled) return;
                 if (!('speechSynthesis' in window)) return;
                 try {
-                    // Browser fallback: prefer a Filipino/Tagalog voice, then a natural English voice.
+                    // Browser fallback: use the cashier's explicit selection, if any; otherwise
+                    // retain the original Filipino/Tagalog-first automatic voice selection.
                     const chunks = String(message).match(/[^.!?]+[.!?]*/g) || [String(message)];
                     const queue = chunks.map(chunk => chunk.trim()).filter(Boolean);
-                    const voice = choosePosVoice() || posPreferredVoice;
+                    const voice = getExplicitPosVoice() || choosePosVoice() || posPreferredVoice;
                     const useTagalog = (options.lang || posVoiceLanguage) !== 'en-PH';
                     const speakNext = index => {
                         if (index >= queue.length || !audioAssistantEnabled || token !== aiVoiceRequestToken) return;
                         const utterance = new SpeechSynthesisUtterance(queue[index]);
-                        utterance.lang = useTagalog ? (voice && /^(fil|tl)([-_]|$)/i.test(voice.lang || '') ? voice.lang : 'fil-PH') : (voice?.lang || 'en-PH');
-                        if (voice && (!useTagalog || /^(fil|tl)([-_]|$)/i.test(voice.lang || '') || /filipino|tagalog/i.test(voice.name || ''))) utterance.voice = voice;
+                        utterance.lang = posSelectedVoiceId && voice?.lang ? voice.lang : (useTagalog ? (voice && /^(fil|tl)([-_]|$)/i.test(voice.lang || '') ? voice.lang : 'fil-PH') : (voice?.lang || 'en-PH'));
+                        if (voice && (posSelectedVoiceId || !useTagalog || /^(fil|tl)([-_]|$)/i.test(voice.lang || '') || /filipino|tagalog/i.test(voice.name || ''))) utterance.voice = voice;
                         utterance.rate = options.rate ?? 0.88;
                         utterance.pitch = options.pitch ?? 1.0;
                         utterance.volume = 1;
