@@ -141,3 +141,8 @@ not a guarantee that Netlify or its storage service will never return a 502/503/
 ## Latest storage-context correction
 
 The Netlify Blobs store is now created inside each Functions v2 request handler rather than at module import time. The site-wide store name and keys are unchanged. See `REQUEST_SCOPED_BLOBS_FIX_NOTES.txt` for safe deployment instructions.
+
+
+## Optional Azure AI Speech voice
+
+This project includes `netlify/functions/azure-voice.mjs`. The POS uses `/api/azure-voice` by default when no custom AI voice endpoint has been saved. Configure `AZURE_SPEECH_KEY` and `AZURE_SPEECH_REGION` in Netlify Environment variables, then redeploy. Full setup instructions are in `AZURE_SPEECH_SETUP.txt`. Existing browser SpeechSynthesis remains the fallback.

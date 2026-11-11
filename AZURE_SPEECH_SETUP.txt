@@ -1,0 +1,93 @@
+39ERS DELIGHTS POS — AZURE AI SPEECH VOICE SETUP
+=================================================
+
+WHAT THIS ADD-ON DOES
+---------------------
+- Uses Microsoft Azure AI Speech for natural voice announcements in the cashier POS.
+- Uses a female Filipino voice: fil-PH-Blessica:DragonHDLatestNeural (multilingual HD voice).
+- Supports Filipino and English announcement text. The current POS language selector remains available.
+- Uses a female standard-voice fallback if the HD voice is unavailable for the resource.
+- Keeps the existing browser SpeechSynthesis voice as an automatic fallback.
+- Keeps the optional custom HTTPS AI voice endpoint setting.
+- Keeps the existing click sounds, Sound & Voice ON/OFF control, and all POS event announcements.
+- Adds a Test AI Voice button in the cashier POS.
+
+NO AZURE KEY IS INCLUDED IN THIS ZIP.
+Never put the Azure key in GitHub, HTML, JavaScript, or a chat message.
+
+WHY AZURE SPEECH
+----------------
+The built-in endpoint is supplied by this Netlify project. You do not need to find or paste a third-party endpoint URL. The browser sends speech text to:
+
+    /api/azure-voice
+
+The Netlify Function securely contacts Azure Speech and returns MP3 audio. The cashier device key is sent only to this same-site Netlify Function; it is never sent to Microsoft or a third-party custom endpoint.
+
+CREATE A SPEECH RESOURCE
+------------------------
+1. Open the Azure portal: https://portal.azure.com/
+2. Sign in with your Microsoft account and choose your Azure subscription.
+3. Create a resource named Speech (Azure AI Speech / Speech service).
+4. Choose Southeast Asia as the region if available. Its region identifier is:
+
+       southeastasia
+
+   The region must match the key issued for your resource. Do not type a different region from the one shown on your resource.
+5. Choose the pricing tier shown by Azure that suits your expected usage. Review the current pricing and limits in Azure before enabling it.
+6. Create the resource. Open it and find Keys and Endpoint.
+7. Copy Key 1 (or Key 2) and note the Region. Do not share the key.
+
+NETLIFY ENVIRONMENT VARIABLES
+-----------------------------
+In Netlify → Environment variables → Add a single variable, add these two entries separately:
+
+AZURE_SPEECH_KEY     = your private Speech resource key
+AZURE_SPEECH_REGION  = southeastasia (or the exact region shown on your Azure Speech resource)
+
+For each variable:
+- Select Contains secret values for AZURE_SPEECH_KEY.
+- Choose All scopes.
+- Choose Same value for all deploy contexts.
+- Save.
+
+After adding both values, trigger a fresh deployment. Do not put these values in GitHub.
+
+BUILT-IN VOICE DETAILS
+----------------------
+Primary female voice:
+    fil-PH-Blessica:DragonHDLatestNeural
+
+Standard female fallback:
+    fil-PH-BlessicaNeural (Filipino)
+    en-PH-RosaNeural (Philippine English)
+
+The HD Filipino voice is multilingual and can speak in the detected language. Azure's current voice support documentation lists it as a female Filipino HD voice; the HD voice is currently marked preview. Southeast Asia is listed as supporting neural TTS and HD voices. If the HD voice is unavailable for a request, the function tries the standard female voice.
+
+TEST THE POS
+------------
+1. Wait for Netlify to say Published.
+2. Open the cashier POS in the same registered Chrome profile.
+3. Refresh with Ctrl + F5.
+4. Make sure Sound & Voice is ON.
+5. Click Test AI Voice.
+6. A successful test should play the Azure female voice. If Azure is unavailable, the POS falls back to its existing browser voice.
+7. Test a new mobile order announcement and a completed checkout announcement.
+
+TROUBLESHOOTING
+---------------
+- If the test says Azure is not configured, check the exact variable names AZURE_SPEECH_KEY and AZURE_SPEECH_REGION, then redeploy.
+- If the test reports HTTP 401, confirm that the key belongs to the Azure Speech resource and that AZURE_SPEECH_REGION exactly matches that resource's region.
+- If it reports HTTP 429, review the Speech resource quota and usage limits.
+- If it reports HTTP 400/404/422, the function first attempts the standard female voice as a fallback. If that also fails, check the voice/region availability in Azure.
+- If Azure fails, the POS keeps the existing browser voice fallback. Voice generation is not part of checkout, inventory deduction, order storage, Blobs menu publishing, or Google Sheets sync.
+
+FEATURE PRESERVATION
+--------------------
+- No existing POS sales or checkout rules are changed.
+- Inventory, Sold Out, VAT, discounts, promotions, receipts and reports are unchanged.
+- Mobile QR ordering, incoming orders and cashier import flow are unchanged.
+- The existing mobile-menu, mobile-orders and reset-pos-device functions are unchanged.
+- The existing Blobs store name, keys, and shared storage helper are unchanged.
+- Google Sheets setup and sync files are unchanged.
+- The jingle, animated logo, and customer QR design are unchanged.
+- No new npm dependencies are required.

@@ -1,0 +1,27 @@
+39ERS DELIGHTS — MOBILE QR ORDER NAVIGATION UPDATE
+
+Purpose
+- Put the existing Customer QR and Incoming Mobile Orders controls at the top of the right-hand Current Order / checkout panel.
+- Make Incoming Mobile Orders easier to spot with a clearer button and a pulsing pending-count badge.
+- Reduce clutter in the global header while keeping all existing voice, manager, audit, and Google Sheets controls there.
+
+What changed
+- Only public/index.html has application-code changes.
+- The existing openCustomerQrModal() and openIncomingOrdersModal() click handlers are retained.
+- The existing mobile-orders-badge element ID is retained so the current order polling and badge updates continue working.
+- Both existing buttons now appear immediately above Current Order in the right-hand cart/checkout panel.
+
+What did NOT change
+- No mobile order API/function, order queue, order review, confirm/reject flow, or cart-import behavior was changed.
+- No POS checkout, pricing, VAT, discounts, promotions, receipts, reports, inventory, or Sold Out logic was changed.
+- No Azure voice configuration, browser voice fallback, customer jingle, QR customer page, Netlify Blobs code, store names, keys, or Google Sheets files were changed.
+- No package dependencies or Netlify configuration were changed.
+
+Install the small patch
+1. Open the 39ersdelightsMGSFH GitHub repository and select main.
+2. Open public/index.html and use Edit, or upload the replacement file to the same path.
+3. Replace only public/index.html with the file in this patch.
+4. Commit the change to main and let Netlify deploy.
+5. Refresh the cashier POS and verify the two quick-action buttons appear above Current Order.
+
+Keep your backup. Do not delete or replace any other files.

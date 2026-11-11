@@ -225,7 +225,22 @@
         .customer-jingle-hint { min-height:1rem; color:#f4d88b; font-size:10px; }
         @media (max-width:420px) { .customer-quick-checkout { padding:.6rem .65rem; } .customer-quick-checkout button { padding:.65rem .72rem; font-size:.75rem; } }
         @media (prefers-reduced-motion: reduce) { .customer-category-tab,.customer-item-card,.customer-tab-indicator,.customer-qr-logo-frame,.customer-qr-logo { transition:none !important; } .customer-added-flash,.customer-item-card.is-selected { animation:none !important; } .customer-qr-logo-frame::before,.customer-qr-logo-aura { animation-duration:10s !important; } .customer-qr-logo-rays { animation-duration:48s !important; } .customer-qr-logo-pulse { animation-duration:10s !important; } .customer-qr-logo-energy-sweep,.customer-qr-logo-plasma { animation-duration:28s !important; } .customer-qr-logo-orbit { animation-duration:28s !important; } .customer-qr-logo-orbit-secondary { animation-duration:34s !important; } .customer-qr-logo-glint { animation-duration:16s !important; } .customer-qr-logo-impact { animation-duration:12s !important; } .customer-qr-logo { animation-duration:10s !important; } }
-    </style>
+    
+        /* Cashier navigation: keep mobile QR tools beside the live order and checkout area. */
+        .cashier-mobile-order-shortcuts { display:grid; grid-template-columns:minmax(0,.88fr) minmax(0,1.35fr); gap:.55rem; margin:0 0 .85rem; }
+        .cashier-mobile-quick-btn { min-width:0; min-height:48px; display:flex; align-items:center; justify-content:center; gap:.55rem; padding:.72rem .8rem; border-radius:.9rem; font-size:.78rem; line-height:1.15; font-weight:800; letter-spacing:.01em; transition:transform .16s ease,filter .16s ease,box-shadow .16s ease,border-color .16s ease; box-shadow:0 5px 15px rgba(0,0,0,.18); }
+        .cashier-mobile-quick-btn:hover { transform:translateY(-1px); filter:brightness(1.12); }
+        .cashier-mobile-quick-btn:focus-visible { outline:3px solid rgba(248,223,138,.95); outline-offset:2px; }
+        .cashier-mobile-quick-btn i { font-size:1rem; flex:0 0 auto; }
+        .cashier-mobile-quick-btn span { min-width:0; }
+        .cashier-mobile-qr-btn { color:#f7df9a; background:linear-gradient(135deg,rgba(93,48,20,.96),rgba(46,27,18,.98)); border:1px solid rgba(212,175,55,.58); }
+        .cashier-incoming-orders-btn { color:#fff2ca; background:linear-gradient(110deg,rgba(80,43,18,.98),rgba(66,35,22,.98) 42%,rgba(54,38,83,.98)); border:1px solid rgba(248,205,91,.8); box-shadow:0 0 0 1px rgba(212,175,55,.15),0 7px 18px rgba(0,0,0,.24),0 0 16px rgba(212,175,55,.12); }
+        .cashier-incoming-orders-btn i { color:#f5cf66; }
+        #mobile-orders-badge:not(.hidden) { display:inline-flex; align-items:center; justify-content:center; box-shadow:0 0 0 2px rgba(255,255,255,.14),0 0 14px rgba(244,63,94,.55); animation:cashier-order-badge-pulse 1.7s ease-in-out infinite; }
+        @keyframes cashier-order-badge-pulse { 0%,100% { transform:scale(1); } 50% { transform:scale(1.12); } }
+        @media (max-width:420px) { .cashier-mobile-order-shortcuts { grid-template-columns:1fr 1.25fr; gap:.4rem; } .cashier-mobile-quick-btn { padding:.65rem .48rem; gap:.38rem; font-size:.69rem; } .cashier-mobile-quick-btn i { font-size:.9rem; } }
+        @media (prefers-reduced-motion: reduce) { .cashier-mobile-quick-btn { transition:none; } #mobile-orders-badge:not(.hidden) { animation:none; } }
+</style>
 </head>
 <body class="bg-mocha-900 text-gray-100 font-sans min-h-screen flex flex-col antialiased selection:bg-gold-500 selection:text-mocha-900">
 
@@ -260,10 +275,11 @@
                 </div>
 
                 <button id="audio-assistant-toggle" onclick="toggleAudioAssistant()" title="Turn click sounds and friendly voice announcements on/off" class="px-3.5 py-2 rounded-xl bg-emerald-900/50 hover:bg-emerald-800 border border-emerald-400/30 text-emerald-300 hover:text-white transition flex items-center gap-2 text-xs font-semibold shadow-sm"><i id="audio-assistant-icon" class="fa-solid fa-volume-high"></i><span id="audio-assistant-label">Sound & Voice: ON</span></button>
-                <label class="flex items-center gap-2 px-2 py-1 rounded-xl bg-mocha-800 border border-gold-500/20 text-xs text-gray-300" title="Choose the voice language"><span>Voice</span><select id="pos-voice-language" onchange="setPosVoiceLanguage(this.value)" class="bg-mocha-900 text-gold-300 rounded-md px-2 py-1 outline-none"><option value="fil-PH">Tagalog</option><option value="en-PH">English</option></select></label>
+                <label class="flex items-center gap-2 px-2 py-1 rounded-xl bg-mocha-800 border border-gold-500/20 text-xs text-gray-300" title="Choose the voice language"><span>Voice</span><select id="pos-voice-language" onchange="setPosVoiceLanguage(this.value)" class="bg-mocha-900 text-gold-300 rounded-md px-2 py-1 outline-none"><option value="fil-PH">Filipino + English (Taglish)</option><option value="en-PH">English</option></select></label>
                 <button onclick="configureAiVoiceEndpoint()" title="Configure online AI voice service" class="px-3 py-2 rounded-xl bg-violet-900/50 hover:bg-violet-800 border border-violet-400/30 text-violet-200 hover:text-white transition flex items-center gap-2 text-xs font-semibold shadow-sm"><i class="fa-solid fa-wand-magic-sparkles"></i><span>AI Voice Setup</span></button>
-                <button onclick="openCustomerQrModal()" class="px-3.5 py-2 rounded-xl bg-sky-900/50 hover:bg-sky-800 border border-sky-400/30 text-sky-300 hover:text-white transition flex items-center gap-2 text-xs font-semibold shadow-sm"><i class="fa-solid fa-qrcode"></i><span>Customer QR / Mobile Order</span></button>
-                <button onclick="openIncomingOrdersModal()" class="relative px-3.5 py-2 rounded-xl bg-indigo-900/50 hover:bg-indigo-800 border border-indigo-400/30 text-indigo-300 hover:text-white transition flex items-center gap-2 text-xs font-semibold shadow-sm"><i class="fa-solid fa-bell"></i><span>Incoming Orders</span><span id="mobile-orders-badge" class="hidden rounded-full bg-rose-500 text-white text-[10px] px-1.5 py-0.5">0</span></button>
+                <button onclick="testAiVoice()" title="Test the built-in Azure female Filipino-English voice" class="px-3 py-2 rounded-xl bg-amber-900/50 hover:bg-amber-800 border border-amber-400/30 text-amber-200 hover:text-white transition flex items-center gap-2 text-xs font-semibold shadow-sm"><i class="fa-solid fa-microphone"></i><span>Test AI Voice</span></button>
+                
+                
                 <button onclick="promptManagerAccess()" class="px-3.5 py-2 rounded-xl bg-mocha-700 hover:bg-mocha-600 border border-gold-500/30 text-gold-400 hover:text-white transition flex items-center gap-2 text-xs font-semibold shadow-sm">
                     <i class="fa-solid fa-lock text-gold-400"></i>
                     <span>Manager's Tab</span>
@@ -353,6 +369,10 @@
         <!-- Right Side Cart Panel -->
         <section class="lg:col-span-5 xl:col-span-4 sticky top-20">
             <div class="glass-panel rounded-2xl p-4 flex flex-col gap-4 shadow-xl border border-gold-500/20">
+                <div class="cashier-mobile-order-shortcuts no-print" role="group" aria-label="Mobile QR order shortcuts">
+                    <button type="button" onclick="openCustomerQrModal()" aria-label="Open customer QR and mobile ordering tools" title="Generate or manage the customer QR ordering link" class="cashier-mobile-quick-btn cashier-mobile-qr-btn"><i class="fa-solid fa-qrcode" aria-hidden="true"></i><span>Customer QR</span></button>
+                    <button type="button" onclick="openIncomingOrdersModal()" aria-label="Open incoming mobile QR orders" title="Review, confirm, or reject incoming customer mobile orders" class="cashier-mobile-quick-btn cashier-incoming-orders-btn"><i class="fa-solid fa-bell" aria-hidden="true"></i><span>Incoming Mobile Orders</span><span id="mobile-orders-badge" class="hidden rounded-full bg-rose-500 text-white text-[10px] px-2 py-1 font-extrabold min-w-[1.4rem] text-center">0</span></button>
+                </div>
                 
                 <div class="border-b border-gold-500/20 pb-3">
                     <div class="flex items-center justify-between">
@@ -1068,7 +1088,13 @@
         let activeMobileOrderMeta = null;
         let audioAssistantEnabled = localStorage.getItem('pos_audio_assistant_enabled_v1') !== 'false';
         // Optional secure server-side AI TTS endpoint. No provider secret/API key is stored in this HTML.
-        let aiVoiceEndpoint = localStorage.getItem('pos_ai_voice_endpoint_v1') || '';
+        const aiVoiceEndpointStorageKey = 'pos_ai_voice_endpoint_v1';
+        const defaultAiVoiceEndpoint = '/api/azure-voice';
+        let aiVoiceEndpoint = localStorage.getItem(aiVoiceEndpointStorageKey);
+        if (aiVoiceEndpoint === null) {
+            aiVoiceEndpoint = defaultAiVoiceEndpoint;
+            localStorage.setItem(aiVoiceEndpointStorageKey, aiVoiceEndpoint);
+        }
         let posVoiceLanguage = localStorage.getItem('pos_voice_language_v1') === 'en-PH' ? 'en-PH' : 'fil-PH';
         let activeAiAudio = null;
         let aiVoiceRequestToken = 0;
@@ -1122,7 +1148,7 @@
             updateAudioAssistantButton();
             if (audioAssistantEnabled) {
                 playPosClickSound();
-                speakPosMessage(posVoiceLanguage === 'en-PH' ? 'Hello! Sound and voice announcements are now on. Thank you for choosing 39ers Delights!' : 'Magandang araw po! Naka-on na ang mga tunog at voice announcement. Maraming salamat sa pagpili ng 39ers Delights!');
+                speakPosMessage(posVoiceLanguage === 'en-PH' ? 'Hello! Sound and voice announcements are now on. Thank you for choosing 39ers Delights!' : 'Magandang araw po! Sound and voice announcements are now ON. Thank you for choosing 39ers Delights! Maraming salamat po!');
             } else {
                 aiVoiceRequestToken++;
                 if (activeAiAudio) { activeAiAudio.pause(); activeAiAudio = null; }
@@ -1160,8 +1186,8 @@
             aiVoiceRequestToken++;
             if (activeAiAudio) { activeAiAudio.pause(); activeAiAudio.src = ''; activeAiAudio = null; }
             if ('speechSynthesis' in window) window.speechSynthesis.cancel();
-            showToast(`Voice language set to ${posVoiceLanguage === 'en-PH' ? 'English' : 'Tagalog'}.`, 'success');
-            if (audioAssistantEnabled) speakPosMessage(posVoiceLanguage === 'en-PH' ? 'English voice selected. Voice announcements will now speak in English.' : 'Napili ang wikang Tagalog. Mula ngayon, magsasalita sa Tagalog ang mga voice announcement.');
+            showToast(`Voice language set to ${posVoiceLanguage === 'en-PH' ? 'English' : 'Filipino + English (Taglish)'}.`, 'success');
+            if (audioAssistantEnabled) speakPosMessage(posVoiceLanguage === 'en-PH' ? 'English voice selected. Voice announcements will now speak in English.' : 'Napili ang Filipino-English Taglish voice. From now on, mixed Filipino and English ang voice announcements natin.');
         }
         function choosePosVoice() {
             if (!('speechSynthesis' in window)) return null;
@@ -1191,7 +1217,7 @@
         function configureAiVoiceEndpoint() {
             const current = aiVoiceEndpoint || '';
             const value = window.prompt(
-                'Optional online AI voice endpoint URL. It must be your trusted HTTPS backend, allow this page through CORS, accept POST JSON containing text and language (fil-PH or en-PH), and return audio bytes (MP3/WAV) or JSON containing audioUrl. Do not paste an AI provider API key here.',
+                'Built-in Azure female Filipino-English voice is available at /api/azure-voice and is selected by default. Leave this URL unchanged to use it. You may enter another trusted HTTPS AI voice backend if you already have one. Never paste an API key here.',
                 current
             );
             if (value === null) return;
@@ -1208,9 +1234,14 @@
         async function tryOnlineAiVoice(message, options = {}, token) {
             if (!aiVoiceEndpoint || !navigator.onLine || typeof fetch !== 'function') return false;
             try {
-                const response = await fetch(aiVoiceEndpoint, {
+                const endpointUrl = new URL(aiVoiceEndpoint, window.location.href);
+                const requestHeaders = { 'Content-Type': 'application/json', 'Accept': 'audio/mpeg, audio/wav, audio/*, application/json' };
+                // The built-in Netlify Azure endpoint checks the registered cashier device.
+                // Do not send the POS device key to a third-party custom endpoint.
+                if (endpointUrl.origin === window.location.origin) requestHeaders['x-store-key'] = getStoreDeviceKey();
+                const response = await fetch(endpointUrl.toString(), {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Accept': 'audio/mpeg, audio/wav, audio/*, application/json' },
+                    headers: requestHeaders,
                     body: JSON.stringify({ text: String(message), language: options.lang || posVoiceLanguage, voice: options.voice || (posVoiceLanguage === 'en-PH' ? 'natural-english' : 'natural-tagalog'), style: 'warm-conversational' })
                 });
                 if (!response.ok) throw new Error('AI voice service returned ' + response.status);
@@ -1240,13 +1271,36 @@
                 return false;
             }
         }
+        async function testAiVoice() {
+            const message = posVoiceLanguage === 'en-PH'
+                ? 'Hello po! This is the 39ers Delights AI voice assistant. Your cashier system is ready. Thank you for choosing 39ers Delights!'
+                : 'Kumusta po! Welcome to 39ers Delights. Ready na po ang cashier voice assistant natin. Thank you po, and happy serving!';
+            if (!audioAssistantEnabled) {
+                showToast('Turn Sound & Voice ON before testing the AI voice.', 'warning');
+                return;
+            }
+            if (!aiVoiceEndpoint) {
+                showToast('AI voice is disabled. Use AI Voice Setup to restore /api/azure-voice.', 'warning');
+                speakPosMessage(message, { forceBrowser: true });
+                return;
+            }
+            const token = ++aiVoiceRequestToken;
+            const onlinePlayed = await tryOnlineAiVoice(message, { lang: posVoiceLanguage }, token);
+            if (onlinePlayed) {
+                showToast('AI voice test successful. The Azure female voice is playing.', 'success');
+            } else {
+                showToast('Azure AI voice is unavailable or not configured. Your existing browser voice will be used.', 'warning');
+                speakPosMessage(message, { forceBrowser: true });
+            }
+        }
+
         function speakPosMessage(message, options = {}) {
             if (!audioAssistantEnabled || !message) return;
             const token = ++aiVoiceRequestToken;
             if (activeAiAudio) { activeAiAudio.pause(); activeAiAudio = null; }
             if ('speechSynthesis' in window) window.speechSynthesis.cancel();
             (async () => {
-                const onlinePlayed = await tryOnlineAiVoice(message, options, token);
+                const onlinePlayed = options.forceBrowser ? false : await tryOnlineAiVoice(message, options, token);
                 if (onlinePlayed || token !== aiVoiceRequestToken || !audioAssistantEnabled) return;
                 if (!('speechSynthesis' in window)) return;
                 try {
@@ -1491,7 +1545,7 @@
                     showToast(`New mobile order received${order.code ? ` #${order.code}` : ''}!`, 'info');
                     speakPosMessage(posVoiceLanguage === 'en-PH'
                         ? `A new mobile order has arrived from ${order.station || 'counter'}. ${summary ? `The order is ${summary}. ` : ''}Please review the order when you are ready. Thank you!`
-                        : `May bagong mobile order po mula sa ${order.station || 'counter'}. ${summary ? `Ang order ay ${summary}. ` : ''}Pakisuri po ang order kapag handa na kayo. Maraming salamat!`,
+                        : `May bagong mobile order po from ${order.station || 'counter'}. ${summary ? `Order details: ${summary}. ` : ''}Please review the order when you are ready. Thank you po!`,
                         { rate: 0.87, pitch: 1.0 });
                 }
                 const badge = document.getElementById('mobile-orders-badge');
