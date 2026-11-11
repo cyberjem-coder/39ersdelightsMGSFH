@@ -11,6 +11,9 @@ function doPost(e) {
   lock.waitLock(30000);
   try {
     const payload = JSON.parse((e && e.postData && e.postData.contents) || '{}');
+    if (payload.app === '39ers Delights POS' && payload.action === 'saveGcashPaymentProof') {
+      return jsonResponse(saveGcashPaymentProof_(payload));
+    }
     if (payload.app === '39ers Delights POS' && payload.action === 'submitMobileOrder') {
       return jsonResponse(saveMobileOrder_(payload));
     }
@@ -29,8 +32,8 @@ function doPost(e) {
     deleteTransactionRows_(ss, 'Sales Transactions', voidedIds);
 
     upsertRows_(ss, 'Sales Transactions',
-      ['Transaction ID', 'Transaction Date & Time (ISO)', 'Transaction Date & Time (Philippines)', 'Total Amount (PHP)', 'Amount Received (PHP)', 'Change Given (PHP)', 'Payment Method', 'Order Mode', 'Total Items'],
-      (payload.transactions || []).map(r => [r.transactionId, r.transactionDateTime, r.localDateTime || formatLocal_(r.transactionDateTime), Number(r.totalAmount) || 0, Number(r.amountReceived) || 0, Number(r.changeGiven) || 0, r.paymentMethod || '', r.orderMode || '', Number(r.itemCount) || 0]), 0);
+      ['Transaction ID', 'Transaction Date & Time (ISO)', 'Transaction Date & Time (Philippines)', 'Total Amount (PHP)', 'Amount Received (PHP)', 'Change Given (PHP)', 'Payment Method', 'Order Mode', 'Total Items', 'Mobile Order Token', 'GCash Proof Drive URL', 'GCash Verification Status', 'GCash Proof Sheets Sync Status'],
+      (payload.transactions || []).map(r => [r.transactionId, r.transactionDateTime, r.localDateTime || formatLocal_(r.transactionDateTime), Number(r.totalAmount) || 0, Number(r.amountReceived) || 0, Number(r.changeGiven) || 0, r.paymentMethod || '', r.orderMode || '', Number(r.itemCount) || 0, r.mobileOrderToken || '', r.gcashProofDriveUrl || '', r.gcashProofStatus || '', r.gcashProofSheetsSyncStatus || '']), 0);
 
     upsertRows_(ss, 'Audit History',
       ['Audit ID', 'Change Date & Time (ISO)', 'Change Date & Time (Philippines)', 'Event Type', 'Description', 'Details (JSON)'],
@@ -117,6 +120,61 @@ function doGet(e) {
     return ContentService.createTextOutput(callback + '(' + json + ');').setMimeType(ContentService.MimeType.JAVASCRIPT);
   }
   return jsonResponse(result);
+}
+
+/**
+ * Stores a cashier-verified GCash screenshot in a private Drive folder and logs its
+ * metadata/link in a dedicated sheet. The folder is not made public; Drive permissions
+ * remain under the spreadsheet owner's normal Google Drive access controls.
+ */
+function saveGcashPaymentProof_(payload) {
+  const token = String(payload.token || '').trim();
+  const match = String(payload.proofDataUrl || '').match(/^data:(image\/(?:jpeg|png|webp));base64,([A-Za-z0-9+/=]+)$/i);
+  if (!/^MO-[A-Z0-9-]{6,40}$/.test(token) || !match) return { ok: false, message: 'Invalid payment proof upload.' };
+  if (match[2].length > 1200000) return { ok: false, message: 'Payment screenshot is too large. Please upload a smaller image.' };
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  ss.setSpreadsheetTimeZone(POS_TIME_ZONE);
+  const sheet = getOrCreateSheet_(ss, 'GCash Payment Proofs');
+  const headers = ['Mobile Order Token', 'Order Code', 'Submitted At (ISO)', 'Submitted At (Philippines)', 'Order Total (PHP)', 'Screenshot Uploaded At (ISO)', 'Screenshot Uploaded At (Philippines)', 'Verification Status', 'Verified At (ISO)', 'Drive File Name', 'Private Drive File URL', 'Drive File ID'];
+  if (sheet.getLastRow() === 0) sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
+  const last = sheet.getLastRow();
+  const tokens = last > 1 ? sheet.getRange(2, 1, last - 1, 1).getValues().flat().map(String) : [];
+  const found = tokens.indexOf(token);
+  const rowNumber = found >= 0 ? found + 2 : 0;
+  let existing = rowNumber ? sheet.getRange(rowNumber, 1, 1, headers.length).getValues()[0] : [];
+  let fileName = String(existing[9] || '');
+  let fileUrl = String(existing[10] || '');
+  let fileId = String(existing[11] || '');
+
+  // Idempotency: re-verifying or retrying a sync updates the same row/file rather than
+  // creating a new Drive image for every retry.
+  if (!fileId || !fileUrl) {
+    const safeName = String(payload.fileName || ('39ers-GCash-' + token + '.jpg')).replace(/[^a-zA-Z0-9._-]/g, '_').slice(0, 100);
+    const contentType = match[1].toLowerCase();
+    const bytes = Utilities.base64Decode(match[2]);
+    const blob = Utilities.newBlob(bytes, contentType, safeName);
+    const folder = getOrCreateGcashProofFolder_();
+    const file = folder.createFile(blob);
+    fileName = file.getName();
+    fileUrl = file.getUrl();
+    fileId = file.getId();
+  }
+
+  const submittedAt = String(payload.submittedAt || '');
+  const uploadedAt = String(payload.uploadedAt || new Date().toISOString());
+  const verifiedAt = String(payload.verifiedAt || new Date().toISOString());
+  const row = [token, String(payload.code || ''), submittedAt, submittedAt ? formatLocal_(submittedAt) : '', Number(payload.total) || 0,
+    uploadedAt, formatLocal_(uploadedAt), 'VERIFIED', verifiedAt, fileName, fileUrl, fileId];
+  if (rowNumber) sheet.getRange(rowNumber, 1, 1, headers.length).setValues([row]);
+  else sheet.appendRow(row);
+  styleSheet_(sheet);
+  return { ok: true, token: token, fileName: fileName, fileUrl: fileUrl, status: 'VERIFIED' };
+}
+
+
+function getOrCreateGcashProofFolder_() {
+  const folders = DriveApp.getFoldersByName('39ers Delights GCash Payment Proofs');
+  return folders.hasNext() ? folders.next() : DriveApp.createFolder('39ers Delights GCash Payment Proofs');
 }
 
 function saveMobileOrder_(payload) {
@@ -270,8 +328,9 @@ function setupPosSheets() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   ss.setSpreadsheetTimeZone(POS_TIME_ZONE);
   [
-    ['Sales Transactions', ['Transaction ID', 'Transaction Date & Time (ISO)', 'Transaction Date & Time (Philippines)', 'Total Amount (PHP)', 'Amount Received (PHP)', 'Change Given (PHP)', 'Payment Method', 'Order Mode', 'Total Items']],
+    ['Sales Transactions', ['Transaction ID', 'Transaction Date & Time (ISO)', 'Transaction Date & Time (Philippines)', 'Total Amount (PHP)', 'Amount Received (PHP)', 'Change Given (PHP)', 'Payment Method', 'Order Mode', 'Total Items', 'Mobile Order Token', 'GCash Proof Drive URL', 'GCash Verification Status', 'GCash Proof Sheets Sync Status']],
     ['Sales Items', ['Transaction ID', 'Transaction Date & Time (ISO)', 'Item Name', 'Size / Option', 'Quantity', 'Unit Price (PHP)', 'Line Total (PHP)']],
+    ['GCash Payment Proofs', ['Mobile Order Token', 'Order Code', 'Submitted At (ISO)', 'Submitted At (Philippines)', 'Order Total (PHP)', 'Screenshot Uploaded At (ISO)', 'Screenshot Uploaded At (Philippines)', 'Verification Status', 'Verified At (ISO)', 'Drive File Name', 'Private Drive File URL', 'Drive File ID']],
     ['Audit History', ['Audit ID', 'Change Date & Time (ISO)', 'Change Date & Time (Philippines)', 'Event Type', 'Description', 'Details (JSON)']],
     ['Voided Transactions', ['Transaction ID', 'Voided At (ISO)', 'Voided At (Philippines)', 'Original Total (PHP)', 'Exact Reason', 'Manager Action']],
     ['Menu Catalog', ['Item ID', 'Menu Item Name', 'Category', 'Available Price Options', 'Icon']],
@@ -288,4 +347,6 @@ function setupPosSheets() {
     if (sh.getLastRow() === 0) sh.getRange(1, 1, 1, headers.length).setValues([headers]);
     styleSheet_(sh);
   });
+  // Creates the private Drive folder and requests Drive authorization before live payments arrive.
+  getOrCreateGcashProofFolder_();
 }

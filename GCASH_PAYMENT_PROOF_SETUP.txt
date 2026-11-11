@@ -1,0 +1,68 @@
+39ERS DELIGHTS — GCASH PAYMENT SCREENSHOT / CASHIER VERIFICATION / GOOGLE SHEETS LINK
+
+ADDITIVE CHANGE ONLY
+This update adds customer screenshot upload for GCash QR orders, private Netlify Blobs storage, cashier review/verification, Google Drive storage through the existing Apps Script connection, a Google Sheets proof register, and a link/status in the existing POS sales transaction log. Existing cash orders, menu/catalog, stock checks, order confirmation/import, checkout, receipts, reports, voice selector, and other controls are retained.
+
+IMPORTANT PAYMENT CONTROL
+- An uploaded screenshot is NOT proof that funds have reached the merchant account.
+- The cashier must compare the amount, recipient, reference number and transaction time with the actual GCash merchant account/transaction history.
+- Only after the cashier checks the merchant account should they click "Mark payment verified in GCash".
+- A new GCash mobile order cannot be imported into the cashier POS cart until the cashier verification succeeds AND the screenshot upload to Google Sheets succeeds. Pay-at-counter orders keep their old flow.
+- The existing POS checkout remains the only path that records a completed sale and deducts stock.
+
+WHAT THE CUSTOMER DOES
+1. Choose GCash QR on the mobile order page.
+2. Scan/pay the displayed merchant QR for the exact order amount.
+3. Attach a screenshot of the successful transaction before submitting the GCash mobile order.
+4. Submit the order. The screenshot is included with that order and is not visible to other customers.
+
+WHAT THE CASHIER DOES
+1. Open Incoming Mobile Orders and select Review & Confirm.
+2. View the screenshot inside the review panel.
+3. Compare the transfer against the live GCash merchant account; do not rely on screenshot alone.
+4. Click "Mark payment verified in GCash". The backend will upload the screenshot to the connected Google Apps Script endpoint.
+5. When the panel confirms that the proof is saved to Google Sheets, click Review & Confirm Import.
+6. Finish the existing POS checkout as usual. The saved sale record carries the mobile order token, proof link and verification/sync status into the Sales Transactions log.
+
+STORAGE DESIGN
+- Customer screenshots are compressed in the browser to JPEG and limited to 900 KB before upload.
+- The image is stored privately in the existing Netlify Blobs mobile-order store under a separate payment-proof key. The public customer menu/order status endpoints do not return image data.
+- The POS retrieves the image only through the cashier-authorized API (the existing POS device key is required).
+- On cashier verification, the Netlify function sends the image to the existing Google Apps Script /exec URL that is saved in the cashier POS settings.
+- Apps Script creates/uses a private Google Drive folder named "39ers Delights GCash Payment Proofs" and adds a row to the "GCash Payment Proofs" tab. The Drive file is not made public; normal Google Drive permissions apply.
+- When the cashier completes the sale, the existing "Sales Transactions" tab receives extra columns for Mobile Order Token, GCash Proof Drive URL, GCash Verification Status and GCash Proof Sheets Sync Status. The on-screen POS sales transaction log also shows a proof status/link.
+
+REQUIRED INSTALLATION
+A. Update the Netlify/GitHub project files:
+   - public/index.html
+   - netlify/functions/mobile-orders.mjs
+   - docs/39ers_delights_google_sheets_sync.gs
+   Keep their folder paths exactly as shown. Do not delete or rename unrelated project files.
+
+B. Update the Google Apps Script web app:
+   1. Open the Google Sheet already connected to 39ers Delights POS.
+   2. Choose Extensions → Apps Script.
+   3. Replace the existing script contents with the included updated file: docs/39ers_delights_google_sheets_sync.gs. Save.
+   4. In the Apps Script function selector, choose setupPosSheets and click Run once. Review and approve the Google Drive permission request. This creates the new proof sheet and private Drive folder without clearing existing records.
+   5. Choose Deploy → Manage deployments. Edit the existing Web app deployment, select New version, then Deploy. Keep the same existing deployment URL ending in /exec; do not delete the old deployment or create an unrelated new URL.
+   6. Return to the POS, open the existing PIN-protected Google Sheets Sync settings, confirm the same /exec URL is still saved, and save it if needed.
+
+C. Redeploy the Netlify site from the updated GitHub branch. Do not clear Netlify Blobs or browser localStorage.
+
+GOOGLE SHEETS TABS
+- GCash Payment Proofs: one row per mobile order token, with order code, amount, uploaded/verified times, status and private Google Drive file link.
+- Sales Transactions: existing columns are retained and four GCash/mobile-order reference columns are appended. Existing historical rows remain; the normal sync rewrites the tab using the expanded header list while preserving existing records by transaction ID.
+
+TEST BEFORE USING FOR REAL PAYMENTS
+1. Use a small internal test order and a genuine test transfer only if appropriate for your store.
+2. Confirm the customer upload is attached to the correct mobile order.
+3. Check that the POS review displays the correct screenshot.
+4. Verify the exact transfer in the merchant GCash account.
+5. Confirm the GCash Payment Proofs sheet row appears and the linked Drive file opens for an authorized Google account.
+6. Import the order and complete the normal POS checkout.
+7. Confirm the Sales Transactions sheet and on-screen POS log show the mobile order token, proof link and VERIFIED/SYNCED statuses.
+
+LIMITATIONS
+- This is screenshot evidence storage and cashier verification; it is not a GCash API/payment gateway integration and cannot automatically confirm bank settlement.
+- If the Google Apps Script code is not updated/redeployed, or the saved Sheets URL is not connected, proof remains stored with the Netlify order and the POS displays a retry/pending message. New GCash orders stay out of the POS cart until the proof is synced successfully.
+- Keep the Google Sheet, Apps Script deployment URL, Netlify site and Drive folder restricted to the people who need access. The stored Drive file is not shared publicly by this script.

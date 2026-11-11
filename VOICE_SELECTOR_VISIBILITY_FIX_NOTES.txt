@@ -1,0 +1,31 @@
+39ERS DELIGHTS — VOICE SELECTOR VISIBILITY FIX
+================================================
+
+WHY THIS UPDATE
+---------------
+The voice selector was already in the cashier header, but that header also
+contains many controls in one horizontal row. On some screen sizes, the row
+can overflow and leave the Voice Settings button outside the visible area.
+
+WHAT THIS UPDATE CHANGES
+------------------------
+- Adds a clearly visible gold "Voice Settings" button beside the Today's Sales
+  Summary refresh control near the top of the cashier POS.
+- Keeps the original header Voice Settings button.
+- Allows the existing header controls to wrap onto additional lines instead of
+  overflowing horizontally.
+- Both Voice Settings buttons open the same existing selector modal.
+
+PRESERVATION
+------------
+No existing POS feature, tab, workflow, API function, data store, sound, jingle,
+menu, mobile QR order flow, or voice-selection logic is removed or replaced.
+Only public/index.html is changed in this patch.
+
+INSTALLATION
+------------
+Replace the repository file public/index.html with the public/index.html in
+this patch, commit the change to the deployment branch, and redeploy. If your
+Netlify site is connected to GitHub, a new commit should trigger deployment.
+After deployment, hard-refresh the POS page (Ctrl+Shift+R) to avoid a cached
+older page. The gold Voice Settings button should appear beside Refresh totals.

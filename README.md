@@ -10,7 +10,9 @@ This is a complete deployable project package with the customer-facing mobile QR
 │   ├── index.html
 │   ├── reset-pos-device.html
 │   └── assets/
-│       └── 39ers-delights-jingle.mp3
+│       ├── 39ers-delights-jingle.mp3
+│       ├── 39ers-delights-logo.png
+│       └── 39ers-delights-gcash-qr.png
 ├── netlify/
 │   └── functions/
 │       ├── mobile-menu.mjs
@@ -151,3 +153,14 @@ This project includes `netlify/functions/azure-voice.mjs`. The POS uses `/api/az
 ## Additive computer voice selector
 
 The cashier POS now includes a **Voice Settings** control. It lists voices exposed by the current computer/browser, supports previewing a selection, and saves the chosen voice on that POS device. Selecting a specific computer voice makes POS announcements use it directly without calling the online AI voice endpoint first. The default **Automatic** selection preserves the prior online-AI-first behavior and browser fallback. This feature requires no Azure subscription, payment card, API key, or additional npm dependency when using a computer voice. Voice availability depends on the OS and browser. See `VOICE_SELECTOR_UPDATE_NOTES.txt`.
+
+
+## GCash payment screenshot and cashier verification
+
+New GCash QR mobile orders can attach a payment screenshot before they are sent to the cashier. The screenshot is stored separately in the existing Netlify Blobs order store and can only be retrieved by an authorized cashier POS device. The Incoming Mobile Orders review shows the screenshot and requires the cashier to compare it against the real GCash merchant account before marking the payment verified. The image itself is not treated as proof of settlement.
+
+After cashier verification, the existing connected Google Apps Script saves a private Drive copy in the `39ers Delights GCash Payment Proofs` folder and creates a record in the `GCash Payment Proofs` sheet. After normal POS checkout, the existing `Sales Transactions` sheet gains columns for the mobile order token, proof Drive URL, verification status and Sheets sync status. The on-screen POS sales transaction log also shows a proof link/status. Cashier import/checkout for new screenshot-backed GCash orders remains blocked until proof verification and Google Sheets upload both succeed. Pay-at-counter orders retain their existing flow.
+
+**Required one-time update:** The deployed Google Apps Script must also be updated using `docs/39ers_delights_google_sheets_sync.gs`, then `setupPosSheets` must be run once to authorize Drive and create the private folder/sheet. Edit the existing web app deployment and deploy a new version while keeping the same `/exec` URL. Follow `GCASH_PAYMENT_PROOF_SETUP.txt`. The Netlify project must be redeployed after replacing `public/index.html` and `netlify/functions/mobile-orders.mjs`.
+
+The script does not make the Drive images public. Access is controlled by the connected Google account's Drive permissions. This feature is not a GCash API/payment gateway and cannot verify settlement automatically.

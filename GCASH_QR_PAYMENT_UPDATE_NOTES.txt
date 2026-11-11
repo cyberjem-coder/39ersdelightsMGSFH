@@ -1,0 +1,26 @@
+39ERS DELIGHTS — ADDITIVE MOBILE QR GCASH PAYMENT OPTION + PAYMENT SCREENSHOT
+
+WHAT CHANGED
+- Kept the existing Pay at counter / GCash QR payment choice and supplied merchant QR image.
+- Added mandatory screenshot attachment for new GCash QR orders. The customer pays the exact amount, attaches a JPEG/PNG/WebP transaction screenshot, then submits the order.
+- Browser compresses the screenshot to JPEG (up to 900 KB) before upload.
+- Netlify Blobs stores the image separately from the order record; order-list polling does not download the image.
+- Cashier-authorized API endpoint returns the screenshot only to an authorized POS device.
+- Incoming Mobile Orders shows a screenshot-attached indicator. Review Mobile Order shows the image and upload details.
+- Added an explicit cashier action to mark the GCash payment verified, after comparing it with the live GCash merchant account.
+- Cashier import and checkout are held until proof verification and Google Sheets upload have succeeded for new screenshot-backed GCash orders.
+- Added a private Google Drive copy and a row in the GCash Payment Proofs Google Sheets tab through the connected Apps Script web app.
+- Added Mobile Order Token, GCash Proof Drive URL, GCash Verification Status and GCash Proof Sheets Sync Status columns to the existing Sales Transactions tab.
+- Added a Mobile Proof column/link to both POS sales transaction log views.
+
+IMPORTANT PAYMENT LIMITATION
+This is not a GCash API or payment gateway integration. A screenshot can be forged or reused and does not prove that funds settled. Cashiers must compare the amount, recipient, reference number and transaction time with the actual merchant GCash account before marking the proof verified.
+
+FILES CHANGED
+- public/index.html
+- netlify/functions/mobile-orders.mjs
+- docs/39ers_delights_google_sheets_sync.gs
+- GCASH_PAYMENT_PROOF_SETUP.txt
+- GCASH_QR_PAYMENT_UPDATE_NOTES.txt
+
+The existing merchant QR image, logo, jingle, voice selector, functions and other project assets remain in place. Installation instructions for updating/redeploying the Apps Script are in GCASH_PAYMENT_PROOF_SETUP.txt.
