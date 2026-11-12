@@ -1,6 +1,15 @@
 import { createRequestStore, verifyStoreKey, json } from "../../lib/store.mjs";
 import { verifyPosSession } from "../../lib/pos-security.mjs";
 
+function safeMediaUrl(value) {
+  const raw = String(value ?? '').slice(0, 500);
+  try {
+    const parsed = new URL(raw, 'https://local.invalid');
+    const key = parsed.searchParams.get('key') || '';
+    return parsed.pathname === '/api/menu-media' && /^menu-media\/[a-f0-9-]{36}\.(?:jpg|png|webp|mp4|webm|mov)$/.test(key) ? `/api/menu-media?key=${encodeURIComponent(key)}` : '';
+  } catch { return ''; }
+}
+
 function cleanMenu(input) {
   if (!Array.isArray(input)) return [];
   return input.slice(0, 1000).map(row => {
@@ -21,6 +30,9 @@ function cleanMenu(input) {
       stockQuantity,
       manualSoldOut,
       isSoldOut,
+      isUpcoming: row?.isUpcoming === true,
+      promoMediaUrl: safeMediaUrl(row?.promoMediaUrl),
+      promoMediaType: row?.promoMediaType === 'video' ? 'video' : (row?.promoMediaType === 'image' ? 'image' : ''),
       variants: (Array.isArray(row?.variants) ? row.variants : []).slice(0, 30)
         .map(v => ({
           name: String(v?.name ?? "Regular").slice(0, 120),
@@ -29,6 +41,45 @@ function cleanMenu(input) {
         .filter(v => Number.isFinite(v.price) && v.price > 0 && v.price <= 100000),
     };
   }).filter(item => item.itemId && item.itemName && item.variants.length);
+}
+
+function cleanAvailableShowcase(input, menu) {
+  if (!Array.isArray(input)) return [];
+  const menuById = new Map((Array.isArray(menu) ? menu : []).map(item => [String(item.itemId), item]));
+  const seen = new Set();
+  return input.slice(0, 100).map((row, index) => {
+    const itemId = String(row?.itemId ?? '').slice(0, 120);
+    const product = menuById.get(itemId);
+    if (!itemId || !product || product.isUpcoming === true || seen.has(itemId)) return null;
+    seen.add(itemId);
+    const mediaUrl = safeMediaUrl(row?.mediaUrl);
+    return {
+      itemId,
+      mediaUrl,
+      mediaType: mediaUrl && row?.mediaType === 'video' ? 'video' : (mediaUrl && row?.mediaType === 'image' ? 'image' : ''),
+      isVisible: row?.isVisible !== false,
+      sortOrder: Number.isInteger(Number(row?.sortOrder)) ? Math.max(0, Math.min(999, Number(row.sortOrder))) : index,
+    };
+  }).filter(Boolean);
+}
+
+function cleanUpcomingSeries(input) {
+  if (!Array.isArray(input)) return [];
+  return input.slice(0, 100).map((row, index) => {
+    const showPrice = row?.showPrice === true;
+    const parsedPrice = Number(row?.price);
+    const price = showPrice && Number.isFinite(parsedPrice) && parsedPrice >= 0 && parsedPrice <= 100000 ? parsedPrice : null;
+    return {
+      id: String(row?.id ?? `upcoming_${index}`).slice(0, 120),
+      name: String(row?.name ?? '').trim().slice(0, 100),
+      showPrice: showPrice && price !== null,
+      // Never return a hidden price to the customer browser.
+      price: showPrice && price !== null ? price : null,
+      mediaUrl: safeMediaUrl(row?.mediaUrl),
+      mediaType: row?.mediaType === 'video' ? 'video' : (row?.mediaType === 'image' ? 'image' : ''),
+      sortOrder: Number.isInteger(Number(row?.sortOrder)) ? Math.max(0, Math.min(999, Number(row.sortOrder))) : index,
+    };
+  }).filter(item => item.id && item.name);
 }
 
 const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
@@ -67,7 +118,8 @@ async function handleRequest(request, setStage, store) {
   if (request.method === "GET") {
     setStage("menu_storage_read");
     const saved = await withStorageRetry("menu read", () => store.get("customer-menu", { type: "json" }));
-    return json({ ok: true, menu: Array.isArray(saved?.menu) ? saved.menu : [], updatedAt: saved?.updatedAt ?? null });
+    const menu = Array.isArray(saved?.menu) ? saved.menu : [];
+    return json({ ok: true, menu, banner: saved?.banner && safeMediaUrl(saved.banner.mediaUrl) ? { mediaUrl: safeMediaUrl(saved.banner.mediaUrl), mediaType: saved.banner.mediaType === 'video' ? 'video' : 'image' } : null, upcomingSeries: cleanUpcomingSeries(saved?.upcomingSeries), availableShowcase: cleanAvailableShowcase(saved?.availableShowcase, menu), updatedAt: saved?.updatedAt ?? null });
   }
 
   if (request.method === "PUT") {
@@ -89,17 +141,22 @@ async function handleRequest(request, setStage, store) {
     if (!menu.length) return json({ ok: false, message: "The POS menu is empty or has no valid priced variants." }, 400);
 
     // Prevent unexpectedly large snapshots from being sent to Blobs.
-    const serialized = JSON.stringify(menu);
+    const upcomingSeries = cleanUpcomingSeries(body?.upcomingSeries);
+    const availableShowcase = cleanAvailableShowcase(body?.availableShowcase, menu);
+    const serialized = JSON.stringify({ menu, upcomingSeries, availableShowcase });
     if (serialized.length > 3_500_000) {
       return json({ ok: false, message: "The menu snapshot is too large to publish. Please review menu images or descriptions and try again." }, 413);
     }
 
+    const bannerInput = body?.banner && typeof body.banner === 'object' ? body.banner : null;
+    const bannerUrl = bannerInput ? safeMediaUrl(bannerInput.mediaUrl) : '';
+    const banner = bannerUrl ? { mediaUrl: bannerUrl, mediaType: bannerInput.mediaType === 'video' ? 'video' : 'image' } : null;
     const updatedAt = new Date().toISOString();
-    const snapshot = { menu, updatedAt };
+    const snapshot = { menu, banner, upcomingSeries, availableShowcase, updatedAt };
     // This is an overwrite of one fixed key, so retrying the identical snapshot is safe.
     setStage("menu_storage_write");
     const saved = await withStorageRetry("menu write", () => store.setJSON("customer-menu", snapshot));
-    return json({ ok: true, count: menu.length, updatedAt, modified: saved?.modified ?? true });
+    return json({ ok: true, count: menu.length, upcomingSeriesCount: upcomingSeries.length, availableShowcaseCount: availableShowcase.filter(item => item.isVisible).length, updatedAt, modified: saved?.modified ?? true });
   }
 
   return json({ ok: false, message: "Method not allowed." }, 405, { Allow: "GET, PUT" });

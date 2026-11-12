@@ -1,0 +1,50 @@
+39ERS DELIGHTS — UPCOMING FOOD ITEMS SERIES & MEDIA MANAGER
+
+ADDITIVE UPDATE ONLY
+This update adds a separate Upcoming Food Items Series manager to the existing Admin panel and a customer-facing Coming Soon showcase to the mobile QR ordering page. It does not replace the existing single launch banner or the existing per-inventory-item UPCOMING toggle/media controls.
+
+ADMIN SERIES MANAGER
+- Add multiple upcoming food teasers, each with its own name, optional price, Show Price toggle, and image/video media.
+- Supported media: JPG, PNG, WebP, MP4, WebM and MOV, up to the existing 4 MB media upload limit.
+- Edit existing series entries, replace media (or retain the previous media when no new file is selected), reorder entries using up/down controls, and remove an entry from the showcase.
+- Removing an entry from the series does not delete an active POS menu item or change inventory.
+- The separate series is stored in the cashier device's existing browser local storage and published with the existing customer menu snapshot to Netlify Blobs. A new cashier browser with no local series copy restores the published series from Netlify before its first menu publish. If that restore fails, publishing is paused rather than overwriting the previously published series.
+- Manager authorization is required for series changes. Changes are added to the existing audit log.
+
+CUSTOMER MOBILE QR SHOWCASE
+- A swipeable Coming Soon carousel appears below the existing launch banner when the series contains items.
+- Each entry displays its uploaded photo or muted, inline, looping video, plus the item name.
+- If Show Price is enabled and a valid price is present, the price is displayed.
+- If Show Price is disabled, the server publishes a null price; the customer's browser does not receive the hidden price. The card displays the teaser text: "May bagong nakakatakam na paparating! Abangan soon".
+- These cards are preview-only and have no Add to Cart or order action. Existing inventory-backed UPCOMING products continue to use their prior preview-only behavior.
+
+FILES UPDATED
+- public/index.html
+- public/order.html
+- netlify/functions/mobile-menu.mjs
+
+NO GOOGLE APPS SCRIPT CHANGE REQUIRED
+The existing menu-media upload function is reused. The menu snapshot adds a separate upcomingSeries property while retaining existing menu and banner properties. Older saved snapshots without upcomingSeries continue to load with an empty series.
+
+INSTALLATION
+1. Keep a backup of the currently deployed project.
+2. In the existing GitHub repository, replace only the three files at the exact paths shown above with the matching files from this patch.
+3. Do not delete or rename any other project files.
+4. Commit the changes to the same production branch and allow Netlify to deploy.
+5. On the cashier POS, unlock the POS and open the existing Admin/Settings panel. The new Upcoming Food Items Series section appears below the existing Upcoming Launch banner manager.
+6. Add an item, choose whether to show its price, upload media if desired, then save. The existing customer menu publish flow sends the updated series.
+7. Open the customer QR ordering link and refresh. Swipe the Coming Soon row to view the entries.
+
+IMPORTANT NOTES
+- Media is stored in the existing Netlify Blobs-backed menu-media store. The public menu snapshot contains media URLs, not the file bytes.
+- The customer menu endpoint accepts only safe /api/menu-media URLs for the series media.
+- Video playback is muted and inline to improve mobile autoplay compatibility. Some devices/browser settings may still block autoplay; customers can still see the preview card.
+- The series is maintained in browser storage on the authorized POS device that edits it, with a published copy in Netlify. A fresh POS browser can restore the published series the first time it opens Admin Settings; avoid clearing browser storage unnecessarily.
+- No existing cashiers, sales, inventory, checkout, GCash payment, payment proof, security, voice, audit, Google Sheets, or order flows are intentionally removed or replaced.
+
+VALIDATION PERFORMED
+- Node syntax checks for Netlify functions.
+- Node syntax checks for all inline scripts in both HTML pages.
+- Static checks for admin add/edit/remove/reorder controls, show/hide price handling, server-side hidden-price nulling, media URL validation, customer carousel rendering, muted autoplay/loop, and preview-only behavior.
+- ZIP integrity and original project path retention checks.
+- Live Netlify deployment and actual phone/browser playback still require testing after installation.

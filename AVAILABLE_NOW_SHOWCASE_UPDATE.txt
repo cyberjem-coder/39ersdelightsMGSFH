@@ -1,0 +1,33 @@
+39ERS DELIGHTS — AVAILABLE NOW CUSTOMER SHOWCASE
+
+ADDITIVE FEATURE
+This adds an Admin-managed Available Now showcase for existing active POS menu items. It is separate from the existing Upcoming Food Items Series and the single launch banner.
+
+ADMIN WORKFLOW
+- In Admin Settings, choose an existing item from the active menu. Upcoming preview-only products are excluded.
+- Upload an optional current photo or promotional video (JPG, PNG, WebP, MP4, WebM, MOV; maximum 4 MB). Existing uploaded media is retained when no replacement file is selected.
+- Turn Display this item in Mobile QR ordering on or off. Hidden entries remain in the POS manager's local list and are not rendered to customers.
+- Reorder entries, edit/replace media, toggle visibility, or remove an entry from the showcase. Removing it does not delete the POS product or alter inventory.
+- Changes are manager-authorized and written to the existing audit log.
+
+CUSTOMER WORKFLOW
+- A swipeable AVAILABLE NOW section appears on the customer /order.html page when at least one featured menu item is currently orderable.
+- Cards show the media and the product name, with a starting price derived from the real menu variant list.
+- View & Order takes the customer to the matching ordinary menu card. The ordinary variant buttons, stock checks, sold-out status, upcoming restrictions, mobile tray, and checkout remain the only way to order.
+- The server validates item IDs against the published menu, excludes upcoming items, and returns only safe /api/menu-media URLs. Customer display filters hidden, upcoming, and sold-out items.
+
+PERSISTENCE
+- POS-side manager data is kept in localStorage under 39ers_available_now_showcase_v1.
+- Published configuration is stored with the existing Netlify Blobs customer-menu snapshot under availableShowcase.
+- A fresh POS browser restores the published Available Now list before publishing so an empty local state does not wipe the saved showcase.
+- The existing /api/menu-media upload endpoint is reused. No new Netlify function or Google Apps Script update is required.
+
+INSTALLATION
+1. Back up the current deployed project.
+2. Replace only public/index.html, public/order.html, and netlify/functions/mobile-menu.mjs with the matching files from this patch.
+3. Preserve every other project file and folder. Commit to the existing production branch and deploy on Netlify.
+4. Unlock the cashier POS, open Admin Settings, find Available Now — Mobile QR Showcase, choose a current active product, optionally upload a media file, leave Display on Mobile QR enabled, and save/publish.
+5. Open the existing customer QR link and refresh. The Available Now section appears above the order-mode controls when at least one featured product is in stock.
+
+VALIDATION
+Run the project's existing Netlify deployment/build. JavaScript syntax, payload sanitization, hidden-visibility filtering, and customer navigation are checked in this package. Real Netlify Blobs and mobile-browser testing are still required after deployment.

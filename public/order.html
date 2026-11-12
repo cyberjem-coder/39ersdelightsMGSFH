@@ -124,6 +124,25 @@
         .menu-art-lightbox { position:fixed; inset:0; z-index:100; display:flex; align-items:center; justify-content:center; padding:1rem; background:rgba(5,4,3,.88); backdrop-filter:blur(10px); }
         .menu-art-lightbox img { display:block; max-width:min(94vw,1100px); max-height:78vh; object-fit:contain; border-radius:1rem; border:1px solid rgba(245,196,76,.65); box-shadow:0 24px 80px rgba(0,0,0,.6); }
 
+        .customer-launch-banner { position:relative; overflow:hidden; min-height:150px; border:1px solid rgba(245,196,76,.55); border-radius:1rem; background:linear-gradient(115deg,#251507,#4a2b0e 48%,#160d08); box-shadow:0 12px 32px rgba(0,0,0,.25); }
+        .customer-launch-banner img,.customer-launch-banner video { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+        .customer-launch-banner::after { content:""; position:absolute; inset:0; background:linear-gradient(90deg,rgba(10,7,5,.82),rgba(10,7,5,.25)); }
+        .customer-launch-banner-copy { position:relative; z-index:2; min-height:150px; display:flex; align-items:flex-end; padding:1rem; font-weight:800; font-size:clamp(1.05rem,4vw,1.55rem); color:#fff1bd; text-shadow:0 2px 12px #000; }
+        .upcoming-product-card { position:relative; overflow:hidden; border:1px solid rgba(245,196,76,.55); background:linear-gradient(145deg,rgba(68,43,18,.92),rgba(26,20,18,.96)); }
+        .upcoming-product-media { width:100%; aspect-ratio:16/9; object-fit:cover; display:block; }
+        .upcoming-product-overlay { position:absolute; inset:0; display:flex; align-items:flex-end; padding:.75rem; background:linear-gradient(180deg,transparent 35%,rgba(8,6,5,.88)); color:#fff0b8; font-size:.75rem; line-height:1.35; font-weight:800; text-shadow:0 1px 6px #000; }
+        .customer-upcoming-series { border:1px solid rgba(245,196,76,.34); border-radius:1rem; padding:.85rem; background:linear-gradient(135deg,rgba(61,38,17,.66),rgba(24,18,15,.96)); box-shadow:0 10px 28px rgba(0,0,0,.2); }
+        .customer-upcoming-track { display:flex; gap:.8rem; overflow-x:auto; scroll-snap-type:x mandatory; scrollbar-width:thin; padding:.15rem .05rem .55rem; }
+        .customer-upcoming-series-card { flex:0 0 min(82%,310px); scroll-snap-align:start; overflow:hidden; border:1px solid rgba(245,196,76,.35); border-radius:.9rem; background:rgba(16,12,10,.88); }
+        .customer-upcoming-series-card img,.customer-upcoming-series-card video { width:100%; aspect-ratio:16/10; object-fit:cover; display:block; background:#150f0b; }
+        .customer-available-showcase { border:1px solid rgba(52,211,153,.3); border-radius:1rem; padding:.85rem; background:linear-gradient(135deg,rgba(12,58,43,.55),rgba(24,18,15,.96)); box-shadow:0 10px 28px rgba(0,0,0,.2); }
+        .customer-available-track { display:flex; gap:.8rem; overflow-x:auto; scroll-snap-type:x mandatory; scrollbar-width:thin; padding:.15rem .05rem .55rem; }
+        .customer-available-card { flex:0 0 min(82%,310px); scroll-snap-align:start; overflow:hidden; border:1px solid rgba(52,211,153,.35); border-radius:.9rem; background:rgba(16,12,10,.9); }
+        .customer-available-card img,.customer-available-card video { width:100%; aspect-ratio:16/10; object-fit:cover; display:block; background:#150f0b; }
+        .customer-available-placeholder { width:100%; aspect-ratio:16/10; display:flex; align-items:center; justify-content:center; text-align:center; padding:1rem; background:radial-gradient(circle at 50% 40%,rgba(52,211,153,.18),rgba(15,11,9,.98)); color:#d1fae5; font-weight:800; }
+        .customer-upcoming-series-placeholder { width:100%; aspect-ratio:16/10; display:flex; align-items:center; justify-content:center; text-align:center; padding:1rem; background:radial-gradient(circle at 50% 40%,rgba(212,175,55,.24),rgba(15,11,9,.98)); color:#ffe8a5; font-weight:800; }
+        @media (prefers-reduced-motion:reduce) { .customer-launch-banner video,.upcoming-product-card video,.customer-upcoming-series-card video { animation:none !important; } }
+
         ::-webkit-scrollbar {
             width: 6px;
             height: 6px;
@@ -252,6 +271,9 @@
         const stationFromLink = rawStation.replace(/[<>"'&]/g, '').slice(0, 60) || 'Counter';
         let customerOrderCart = [];
         let customerMenuCatalog = [];
+        let customerLaunchBanner = null;
+        let customerUpcomingSeries = [];
+        let customerAvailableShowcase = [];
         function escapeHtml(value) {
             return String(value ?? '').replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
         }
@@ -363,6 +385,15 @@ let customerJingleAudio = null;
                     <p id="cust-audio-hint" class="customer-jingle-hint mt-1 text-center" aria-live="polite">If your phone blocks autoplay, tap anywhere once to start the jingle.</p>
                     <audio id="cust-jingle" autoplay preload="auto" playsinline src="/assets/39ers-delights-jingle.mp3"></audio>
                 </header>
+                <div id="cust-launch-banner" class="hidden customer-launch-banner" aria-label="Upcoming product launch"></div>
+                <section id="cust-upcoming-series" class="hidden customer-upcoming-series space-y-3" aria-label="Coming soon food items">
+                    <div class="flex items-center justify-between gap-2"><div><h2 class="text-sm font-extrabold text-amber-100"><i class="fa-solid fa-sparkles mr-1 text-amber-300"></i> COMING SOON</h2><p class="text-[10px] text-gray-400 mt-0.5">A sneak peek of what's cooking at 39ers Delights</p></div><span class="rounded-full border border-amber-300/30 bg-amber-400/10 px-2 py-1 text-[9px] font-extrabold text-amber-100">PREVIEW ONLY</span></div>
+                    <div id="cust-upcoming-series-track" class="customer-upcoming-track" role="list" aria-label="Swipe to preview upcoming food items"></div>
+                </section>
+                <section id="cust-available-showcase" class="hidden customer-available-showcase space-y-3" aria-label="Available now featured products">
+                    <div class="flex items-center justify-between gap-2"><div><h2 class="text-sm font-extrabold text-emerald-100"><i class="fa-solid fa-fire mr-1 text-emerald-300"></i> AVAILABLE NOW</h2><p class="text-[10px] text-gray-400 mt-0.5">Featured favorites ready to order</p></div><span class="rounded-full border border-emerald-300/30 bg-emerald-400/10 px-2 py-1 text-[9px] font-extrabold text-emerald-100">ORDER NOW</span></div>
+                    <div id="cust-available-track" class="customer-available-track" role="list" aria-label="Swipe to view available featured items"></div>
+                </section>
                 <div class="flex gap-2"><button id="cust-dine" onclick="setCustomerOrderMode('Dine-In')" aria-pressed="true" class="flex-1 rounded-xl p-3 bg-gold-500 text-mocha-900 text-sm font-bold transition-all">Dine-In</button><button id="cust-takeout" onclick="setCustomerOrderMode('Takeout')" aria-pressed="false" class="flex-1 rounded-xl p-3 bg-mocha-700 text-gray-200 text-sm font-bold transition-all">Takeout</button></div>
                 <input id="cust-search" oninput="renderCustomerMenu()" placeholder="Search menu…" aria-label="Search menu" class="w-full glass-input p-3 rounded-xl text-sm">
                 <div id="cust-categories" class="flex gap-2 overflow-x-auto pb-2 pt-1" role="group" aria-label="Menu categories"></div>
@@ -432,6 +463,9 @@ let customerJingleAudio = null;
         let customerGcashProof = null;
         let customerMenuRefreshTimer = null;
         const CUSTOMER_MENU_CACHE_KEY = '39ers_customer_menu_cache_v1';
+        const CUSTOMER_BANNER_CACHE_KEY = '39ers_customer_banner_cache_v1';
+        const CUSTOMER_UPCOMING_SERIES_CACHE_KEY = '39ers_customer_upcoming_series_cache_v1';
+        const CUSTOMER_AVAILABLE_SHOWCASE_CACHE_KEY = '39ers_customer_available_showcase_cache_v1';
         function readCustomerMenuCache() {
             try {
                 const cached = JSON.parse(localStorage.getItem(CUSTOMER_MENU_CACHE_KEY) || 'null');
@@ -440,6 +474,25 @@ let customerJingleAudio = null;
         }
         function saveCustomerMenuCache(menu) {
             try { localStorage.setItem(CUSTOMER_MENU_CACHE_KEY, JSON.stringify(menu)); } catch (_) { /* storage may be unavailable */ }
+        }
+        function saveCustomerBannerCache(banner) {
+            try { if (banner?.mediaUrl) localStorage.setItem(CUSTOMER_BANNER_CACHE_KEY, JSON.stringify(banner)); else localStorage.removeItem(CUSTOMER_BANNER_CACHE_KEY); } catch (_) { /* storage may be unavailable */ }
+        }
+        function readCustomerBannerCache() {
+            try { const banner = JSON.parse(localStorage.getItem(CUSTOMER_BANNER_CACHE_KEY) || 'null'); return banner && typeof banner.mediaUrl === 'string' ? banner : null; }
+            catch (_) { return null; }
+        }
+        function saveCustomerUpcomingSeriesCache(items) {
+            try { localStorage.setItem(CUSTOMER_UPCOMING_SERIES_CACHE_KEY, JSON.stringify(Array.isArray(items) ? items : [])); } catch (_) { /* storage may be unavailable */ }
+        }
+        function readCustomerUpcomingSeriesCache() {
+            try { const rows = JSON.parse(localStorage.getItem(CUSTOMER_UPCOMING_SERIES_CACHE_KEY) || '[]'); return Array.isArray(rows) ? rows : []; } catch (_) { return []; }
+        }
+        function saveCustomerAvailableShowcaseCache(items) {
+            try { localStorage.setItem(CUSTOMER_AVAILABLE_SHOWCASE_CACHE_KEY, JSON.stringify(Array.isArray(items) ? items : [])); } catch (_) { /* storage may be unavailable */ }
+        }
+        function readCustomerAvailableShowcaseCache() {
+            try { const rows = JSON.parse(localStorage.getItem(CUSTOMER_AVAILABLE_SHOWCASE_CACHE_KEY) || '[]'); return Array.isArray(rows) ? rows : []; } catch (_) { return []; }
         }
         function showCustomerMenuConnectionNotice(message = '') {
             const notice = document.getElementById('cust-menu-connection');
@@ -478,11 +531,102 @@ let customerJingleAudio = null;
                 else loadCustomerMenu();
             }, 60000);
         }
+        function renderCustomerLaunchBanner() {
+            const host = document.getElementById('cust-launch-banner');
+            if (!host) return;
+            if (!customerLaunchBanner?.mediaUrl) { host.classList.add('hidden'); host.innerHTML = ''; return; }
+            const url = escapeHtml(customerLaunchBanner.mediaUrl);
+            const media = customerLaunchBanner.mediaType === 'video'
+                ? `<video src="${url}" autoplay muted loop playsinline preload="metadata"></video>`
+                : `<img src="${url}" alt="Upcoming 39ers Delights product launch" loading="eager">`;
+            host.innerHTML = `${media}<div class="customer-launch-banner-copy">Get ready to meet your new obsession. Launching soon!</div>`;
+            host.classList.remove('hidden');
+            const video = host.querySelector('video');
+            if (video) { const play = video.play(); if (play?.catch) play.catch(() => {}); }
+        }
+        function renderUpcomingProductMedia(item) {
+            if (!item?.promoMediaUrl) return '';
+            const url = escapeHtml(item.promoMediaUrl);
+            if (item.promoMediaType === 'video') return `<video class="upcoming-product-media" src="${url}" autoplay muted loop playsinline preload="metadata" aria-label="${escapeHtml(item.itemName)} promotional video"></video>`;
+            return `<img class="upcoming-product-media" src="${url}" alt="${escapeHtml(item.itemName)} promotional photo" loading="lazy">`;
+        }
+        function renderCustomerUpcomingSeries() {
+            const section = document.getElementById('cust-upcoming-series');
+            const track = document.getElementById('cust-upcoming-series-track');
+            if (!section || !track) return;
+            const items = (Array.isArray(customerUpcomingSeries) ? customerUpcomingSeries : []).slice().sort((a,b) => (Number(a.sortOrder) || 0) - (Number(b.sortOrder) || 0));
+            if (!items.length) { section.classList.add('hidden'); track.innerHTML = ''; return; }
+            track.innerHTML = items.map(item => {
+                const name = escapeHtml(item.name || 'Upcoming food item');
+                const mediaUrl = item.mediaUrl ? escapeHtml(item.mediaUrl) : '';
+                const media = mediaUrl
+                    ? (item.mediaType === 'video' ? `<video src="${mediaUrl}" autoplay muted loop playsinline preload="metadata" aria-label="${name} promotional video"></video>` : `<img src="${mediaUrl}" alt="${name} promotional photo" loading="lazy">`)
+                    : `<div class="customer-upcoming-series-placeholder">May bagong nakakatakam na paparating! Abangan soon</div>`;
+                const showPrice = item.showPrice === true && item.price !== null && Number.isFinite(Number(item.price)) && Number(item.price) >= 0;
+                const price = showPrice ? `<p class="mt-1 text-sm font-extrabold text-gold-300">₱${Number(item.price).toFixed(2)}</p>` : '';
+                const teaser = showPrice ? 'COMING SOON · PREVIEW ONLY' : 'May bagong nakakatakam na paparating! Abangan soon';
+                return `<article class="customer-upcoming-series-card" role="listitem"><div class="relative">${media}<span class="absolute left-2 top-2 rounded-full border border-amber-200/50 bg-black/70 px-2 py-1 text-[9px] font-extrabold text-amber-100">UPCOMING</span><div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 to-transparent px-3 pb-2 pt-7 text-[10px] font-extrabold text-amber-100">${escapeHtml(teaser)}</div></div><div class="p-3"><h3 class="font-extrabold text-sm text-amber-50">${name}</h3>${price}<div class="mt-2 inline-flex rounded-full bg-amber-400/10 border border-amber-300/20 px-2 py-1 text-[9px] font-bold text-amber-100">NOT YET ORDERABLE</div></div></article>`;
+            }).join('');
+            section.classList.remove('hidden');
+            track.querySelectorAll('video').forEach(video => { const play = video.play(); if (play?.catch) play.catch(() => {}); });
+        }
+        function renderCustomerAvailableShowcase() {
+            const section = document.getElementById('cust-available-showcase');
+            const track = document.getElementById('cust-available-track');
+            if (!section || !track) return;
+            const products = new Map((Array.isArray(customerMenuCatalog) ? customerMenuCatalog : []).map(item => [String(item.itemId), item]));
+            const entries = (Array.isArray(customerAvailableShowcase) ? customerAvailableShowcase : [])
+                .filter(entry => entry?.isVisible !== false)
+                .slice().sort((a,b) => (Number(a.sortOrder) || 0) - (Number(b.sortOrder) || 0))
+                .map(entry => ({ entry, product: products.get(String(entry.itemId)) }))
+                .filter(({ product }) => product && product.isUpcoming !== true && !isCustomerItemSoldOut(product));
+            if (!entries.length) { section.classList.add('hidden'); track.innerHTML = ''; return; }
+            track.innerHTML = entries.map(({ entry, product }) => {
+                const id = escapeHtml(String(product.itemId));
+                const name = escapeHtml(product.itemName || 'Available menu item');
+                const url = entry.mediaUrl ? escapeHtml(entry.mediaUrl) : '';
+                const media = url
+                    ? (entry.mediaType === 'video' ? `<video src="${url}" autoplay muted loop playsinline preload="metadata" aria-label="${name} featured video"></video>` : `<img src="${url}" alt="${name} featured photo" loading="lazy">`)
+                    : `<div class="customer-available-placeholder"><div><i class="fa-solid fa-utensils text-2xl mb-2"></i><br>${name}</div></div>`;
+                const firstPrice = (product.variants || []).find(v => Number(v.price) > 0)?.price;
+                const fromPrice = Number.isFinite(Number(firstPrice)) ? `<p class="mt-1 text-xs font-bold text-emerald-200">From ₱${Number(firstPrice).toFixed(2)}</p>` : '';
+                return `<article class="customer-available-card" role="listitem"><div class="relative">${media}<span class="absolute left-2 top-2 rounded-full border border-emerald-200/50 bg-black/70 px-2 py-1 text-[9px] font-extrabold text-emerald-100">AVAILABLE NOW</span></div><div class="p-3"><h3 class="font-extrabold text-sm text-emerald-50">${name}</h3>${fromPrice}<button type="button" onclick="openAvailableShowcaseItem('${id}')" class="mt-3 w-full rounded-lg bg-emerald-400 px-3 py-2.5 text-xs font-extrabold text-mocha-900"><i class="fa-solid fa-cart-plus mr-1"></i> View &amp; Order</button></div></article>`;
+            }).join('');
+            section.classList.remove('hidden');
+            track.querySelectorAll('video').forEach(video => { const play = video.play(); if (play?.catch) play.catch(() => {}); });
+        }
+        function openAvailableShowcaseItem(itemId) {
+            playCustomerTapSound();
+            const item = customerMenuCatalog.find(row => String(row.itemId) === String(itemId));
+            if (!item || item.isUpcoming === true || isCustomerItemSoldOut(item)) {
+                const status = document.getElementById('cust-status');
+                if (status) status.textContent = 'This item is currently unavailable. Please choose another available product.';
+                refreshCustomerMenuAvailability();
+                return;
+            }
+            customerCategory = 'ALL';
+            customerSelectedItemId = item.itemId;
+            const search = document.getElementById('cust-search'); if (search) search.value = '';
+            renderCustomerCategoryTabs();
+            renderCustomerMenu();
+            const card = document.querySelector(`#cust-menu [data-item-id="${CSS.escape(String(item.itemId))}"]`);
+            if (card) { card.scrollIntoView({ behavior: 'smooth', block: 'center' }); card.classList.add('customer-added-flash'); }
+        }
+
         async function loadCustomerMenu() {
             const menuElement = document.getElementById('cust-menu');
             try {
                 const data = await requestCustomerMenu(3);
                 customerMenuCatalog = data.menu;
+                customerLaunchBanner = data.banner || null;
+                customerUpcomingSeries = Array.isArray(data.upcomingSeries) ? data.upcomingSeries : [];
+                customerAvailableShowcase = Array.isArray(data.availableShowcase) ? data.availableShowcase : [];
+                saveCustomerUpcomingSeriesCache(customerUpcomingSeries);
+                saveCustomerAvailableShowcaseCache(customerAvailableShowcase);
+                saveCustomerBannerCache(customerLaunchBanner);
+                renderCustomerLaunchBanner();
+                renderCustomerUpcomingSeries();
+                renderCustomerAvailableShowcase();
                 if (!customerMenuCatalog.length) throw new Error('The store menu has not been published yet. Please ask the cashier to open the POS and publish the menu.');
                 saveCustomerMenuCache(customerMenuCatalog);
                 showCustomerMenuConnectionNotice('');
@@ -495,6 +639,12 @@ let customerJingleAudio = null;
                 const cachedMenu = readCustomerMenuCache();
                 if (cachedMenu.length) {
                     customerMenuCatalog = cachedMenu;
+                    customerLaunchBanner = readCustomerBannerCache();
+                    customerUpcomingSeries = readCustomerUpcomingSeriesCache();
+                    customerAvailableShowcase = readCustomerAvailableShowcaseCache();
+                    renderCustomerLaunchBanner();
+                    renderCustomerUpcomingSeries();
+                    renderCustomerAvailableShowcase();
                     renderCustomerCategoryTabs();
                     renderCustomerMenu();
                     renderCustomerTray();
@@ -550,6 +700,15 @@ let customerJingleAudio = null;
                 const data = await requestCustomerMenu(2);
                 if (!Array.isArray(data.menu) || !data.menu.length) throw new Error('The published menu is currently empty.');
                 customerMenuCatalog = data.menu;
+                customerLaunchBanner = data.banner || null;
+                customerUpcomingSeries = Array.isArray(data.upcomingSeries) ? data.upcomingSeries : [];
+                customerAvailableShowcase = Array.isArray(data.availableShowcase) ? data.availableShowcase : [];
+                saveCustomerUpcomingSeriesCache(customerUpcomingSeries);
+                saveCustomerAvailableShowcaseCache(customerAvailableShowcase);
+                saveCustomerBannerCache(customerLaunchBanner);
+                renderCustomerLaunchBanner();
+                renderCustomerUpcomingSeries();
+                renderCustomerAvailableShowcase();
                 saveCustomerMenuCache(customerMenuCatalog);
                 showCustomerMenuConnectionNotice('');
                 renderCustomerCategoryTabs();
@@ -565,7 +724,7 @@ let customerJingleAudio = null;
             }
         }
         function isCustomerItemSoldOut(item) {
-            return Boolean(item?.isSoldOut || item?.manualSoldOut || (item?.stockTracked === true && Number(item?.stockQuantity) <= 0));
+            return Boolean(item?.isUpcoming || item?.isSoldOut || item?.manualSoldOut || (item?.stockTracked === true && Number(item?.stockQuantity) <= 0));
         }
         function getCustomerItemRemaining(item) {
             if (!item || isCustomerItemSoldOut(item)) return 0;
@@ -589,6 +748,10 @@ let customerJingleAudio = null;
                 const stockLabel = soldOut ? '<span class="rounded-full bg-rose-500/15 border border-rose-400/40 px-2 py-0.5 text-[9px] font-extrabold text-rose-300">SOLD OUT</span>'
                     : (item.stockTracked === true ? `<span class="text-[10px] text-amber-300">Available to add: ${Math.max(0, remaining)}</span>` : '');
                 const trayLabel = inTrayQty ? `<span class="rounded-full bg-gold-500/15 border border-gold-400/40 px-2 py-0.5 text-[9px] font-extrabold text-gold-200">IN YOUR TRAY × ${inTrayQty}</span>` : '';
+                if (item.isUpcoming === true) {
+                    const previewMedia = renderUpcomingProductMedia(item);
+                    return `<article data-item-id="${escapeHtml(item.itemId)}" class="upcoming-product-card rounded-xl p-3"><div class="flex items-start justify-between gap-2 mb-2"><div class="font-bold">${escapeHtml(item.itemName)} <span class="block text-[10px] text-gray-400 font-normal">${escapeHtml(item.category)}</span></div><span class="rounded-full bg-amber-400/20 border border-amber-300/50 px-2 py-1 text-[9px] font-extrabold text-amber-100">UPCOMING · PREVIEW ONLY</span></div>${previewMedia ? `<div class="relative overflow-hidden rounded-lg">${previewMedia}<div class="upcoming-product-overlay">May bagong nakakatakam na paparating! Abangan soon</div></div>` : `<div class="rounded-lg border border-amber-300/20 bg-black/20 p-5 text-center text-amber-100 font-bold">May bagong nakakatakam na paparating! Abangan soon</div>`}<div class="mt-2 text-center text-[10px] text-amber-200 font-bold tracking-wide">COMING SOON · NOT YET AVAILABLE TO ORDER</div></article>`;
+                }
                 return `<article data-item-id="${escapeHtml(item.itemId)}" class="customer-item-card ${String(customerSelectedItemId) === String(item.itemId) ? 'is-selected' : ''} ${inTrayQty ? 'is-in-tray customer-added-flash' : ''} rounded-xl ${soldOut ? 'border-rose-400/40' : ''} bg-mocha-800/70 p-3"><div class="flex items-start justify-between gap-2 mb-2"><div class="font-bold">${escapeHtml(item.itemName)} <span class="block text-[10px] text-gray-400 font-normal">${escapeHtml(item.category)}</span></div><div class="flex flex-col items-end gap-1">${stockLabel}${trayLabel}</div></div><div class="grid grid-cols-2 gap-2">${(item.variants || []).map((v, vi) => `<button ${soldOut || remaining <= 0 ? 'disabled aria-disabled="true"' : ''} onclick="addCustomerTrayItem('${escapeHtml(item.itemId)}',${vi})" class="text-left rounded-lg ${soldOut || remaining <= 0 ? 'bg-mocha-900/60 border border-rose-400/20 text-gray-500 cursor-not-allowed opacity-70' : 'bg-mocha-900 border border-gold-500/20'} p-2 text-xs"><span>${escapeHtml(v.name)}</span><strong class="block ${soldOut || remaining <= 0 ? 'text-gray-500' : 'text-gold-300'}">₱${Number(v.price).toFixed(2)}</strong></button>`).join('')}</div></article>`;
             }).join('') || '<p class="text-xs text-gray-400">No items match your search.</p>';
         }
@@ -805,6 +968,7 @@ let customerJingleAudio = null;
                 }
                 for (const [itemId, required] of requiredByItem) {
                     const currentItem = customerMenuCatalog.find(entry => String(entry.itemId) === itemId);
+                    if (currentItem?.isUpcoming === true) throw new Error(`${currentItem.itemName} is an upcoming preview and cannot be ordered yet. Please remove it from your tray.`);
                     if (!currentItem || isCustomerItemSoldOut(currentItem)) throw new Error(`${currentItem?.itemName || 'An item'} has just been marked SOLD OUT. Please remove it from your tray.`);
                     if (currentItem.stockTracked === true && required > Number(currentItem.stockQuantity)) {
                         throw new Error(`Only ${Math.max(0, Number(currentItem.stockQuantity) || 0)} unit(s) of ${currentItem.itemName} remain. Please adjust your tray.`);

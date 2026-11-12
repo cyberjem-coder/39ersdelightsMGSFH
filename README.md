@@ -169,3 +169,14 @@ The script does not make the Drive images public. Access is controlled by the co
 ## POS Security & Customer Route Isolation
 
 See `POS_SECURITY_SETUP.txt` for the one-time Netlify setup. The main cashier POS requires the server-side POS access PIN, supports manual and automatic locking, and allows authorized users to change the POS access PIN from Manager's Tab. Customer QR codes now open the separate `public/order.html` customer-only ordering page.
+
+
+## Upcoming Product Launch Banner and Inventory Teasers
+See `UPCOMING_PRODUCTS_AND_LAUNCH_BANNER_NOTES.txt`. Manager can upload a launch banner and mark products Upcoming with their own promotional photo/video. Upcoming items display as preview-only on mobile QR and are rejected by the order API until launched.
+
+## Upcoming Food Items Series & Media Manager
+See `UPCOMING_FOOD_ITEMS_SERIES_UPDATE.txt` for the additive Admin series manager, per-item media and price visibility controls, customer mobile QR Coming Soon carousel, and installation instructions. This feature reuses the existing Netlify menu-media and customer-menu publishing flow; no Google Apps Script update is required.
+
+
+## Available Now — Customer Mobile QR Showcase
+See `AVAILABLE_NOW_SHOWCASE_UPDATE.txt`. Managers can select an existing non-upcoming POS menu item, upload an optional current product photo/video, and turn its display on or off on the customer QR page. Multiple entries can be reordered, edited, hidden or removed from the showcase without deleting the active POS item or changing inventory. Customer cards show current featured media and link to the matching regular menu item through **View & Order**. Normal variant pricing, live stock/Sold Out checks, upcoming-item restrictions and the existing order submission flow remain authoritative. The showcase is stored with the existing Netlify Blobs customer-menu snapshot; no Google Apps Script update is required.

@@ -1,0 +1,33 @@
+39ERS DELIGHTS — UPCOMING PRODUCTS AND PROMOTIONAL MEDIA
+
+ADDITIVE CHANGE ONLY
+Adds a manager-managed top launch banner and individual product Upcoming status/media to the existing customer QR ordering experience. Existing cashier POS, mobile order submission, stock validation, GCash payment proof, POS security/PIN gate, voice settings, Google Sheets sync, reports, and audit workflows are retained.
+
+ADMIN / MANAGER
+- Manager's Tab > Menu & System Settings includes an Upcoming Launch banner upload.
+- Banner accepts JPG, PNG, WebP, MP4, WebM, and MOV. Each photo or video is limited to 4 MB to stay within Netlify buffered Function upload limits.
+- Uploads are stored separately in the existing Netlify Blobs store. Only media URLs are included in the published menu snapshot.
+- Product form includes an Upcoming checkbox and optional promotional media. Editing an existing item without selecting new media retains its current media.
+- Inventory Monitor includes an Upcoming toggle. Upcoming items remain in the catalogue and inventory records; the flag only changes customer QR display/orderability.
+
+CUSTOMER QR
+- Banner text: “Get ready to meet your new obsession. Launching soon!”
+- Upcoming item overlay: “May bagong nakakatakam na paparating! Abangan soon”
+- Upcoming products are visible as preview-only and cannot be added to the tray.
+- Browser autoplay is attempted for muted looping videos; browser/device policies may defer playback until user interaction. A poster/frame remains visible if autoplay is blocked.
+- The mobile-orders function rejects upcoming products even if a stale browser attempts to submit them.
+
+NETLIFY
+- New function route: /api/menu-media
+- POST requires a valid POS session and authorized POS device key.
+- GET serves only generated menu-media UUID keys as public promotional assets.
+- Media uses the existing Netlify Blobs store: 39ers-delights-mobile-orders.
+- The menu API publishes the banner and upcoming metadata while retaining prior menu fields.
+
+DEPLOY
+1. Keep file paths exactly as shown in the patch.
+2. Add netlify/functions/menu-media.mjs.
+3. Replace public/index.html, public/order.html, netlify/functions/mobile-menu.mjs, and netlify/functions/mobile-orders.mjs with the patch copies.
+4. Do not delete any other files or clear Netlify Blobs/browser localStorage.
+5. Deploy from the existing production branch.
+6. Test with one banner image, one short promotional video, and one upcoming sample product before announcing it publicly.

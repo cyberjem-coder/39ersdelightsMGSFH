@@ -158,6 +158,9 @@ export default async function handler(request) {
       if (!item || !variant || !Number.isInteger(qty) || qty < 1 || qty > 99) {
         return json({ ok: false, message: "One or more items are no longer available. Refresh the menu and try again." }, 400);
       }
+      if (item.isUpcoming === true) {
+        return json({ ok: false, message: `${item.itemName} is an upcoming preview and cannot be ordered yet.` }, 409);
+      }
       if (item.isSoldOut === true || item.manualSoldOut === true || (item.stockTracked === true && Number(item.stockQuantity) <= 0)) {
         return json({ ok: false, message: `${item.itemName} is SOLD OUT. Please remove it from your order.` }, 409);
       }
